@@ -9,7 +9,7 @@
     "ejer3": "tsc-watch --onSuccess \"node dist/ejercicio-3.js\"",
     "doc": "typedoc",
     "test": "vitest run",
-    "coverage": "vitest run --coverage --coverage.include src/*"
+    "coverage": "vitest run --coverage"
   },
   "repository": {
     "type": "git",
