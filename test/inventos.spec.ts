@@ -36,4 +36,17 @@ describe("Test constructor Invento ", () => {
         expect(invento.nivelPeligro).toBe(9);
         expect(invento.descripcion).toBe("Arma de energía que dispara rayos láser, capaz de causar daño significativo a objetivos vivos y estructuras. Es una herramienta comúnmente utilizada por Rick en sus aventuras interdimensionales, conocida por su alta potencia y versatilidad en combate.");
     });
+
+    test("Deberia lanzar un error si el nivel de peligro es distinto de 1-10", () => {
+        expect(() => {
+            new Invento(
+                "inv001",
+                "Invention 1",
+                "Inventor 1",
+                "Arma",
+                0,
+                "Descripción del invento 1"
+            );
+        }).toThrow("El nivel de peligro debe estar entre 1 y 10.");
+    });
 });
