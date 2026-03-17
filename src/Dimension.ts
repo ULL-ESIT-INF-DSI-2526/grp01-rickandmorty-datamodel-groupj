@@ -1,7 +1,11 @@
 import { IDimension } from "./interfaces";
 import { estadosDimension } from "./types";
 
-const ESTADOS_VALIDOS: estadosDimension[] = ["activa", "destruida", "en cuarentena"];
+const ESTADOS_VALIDOS: estadosDimension[] = [
+  "activa",
+  "destruida",
+  "en cuarentena",
+];
 
 export class Dimension implements IDimension {
   public readonly id: string;
@@ -11,6 +15,10 @@ export class Dimension implements IDimension {
   public nivelTec: number;
 
   constructor(data: IDimension) {
+    if (!data.id || data.id.trim().length === 0) {
+      throw new Error("La ID no puede ser vacia");
+    }
+
     this.id = data.id;
     this.nombre = data.nombre;
     this.descripcion = data.descripcion;
