@@ -4,3 +4,7 @@ export type estadosDimension = "activa" | "destruida" | "en cuarentena";
 export type tiposEspecie = "humanoide" | "amorfo" | "robótico" | "parásito" | "hivemind";
 /** Tipos de inventos */
 export type tiposInvento = "Arma" | "Dispositivo de viaje" | "Biotecnología" | "Objeto cotidiano absurdo";
+/** Valores posibles para el estado de un personaje */
+export type estadosPersonaje = "vivo" | "muerto" | "desconocido" | "robot sustituto" | "clon";
+/** Valores posibles para la afiliación de un personaje */
+export type tipoAfiliacion = "Federación Galáctica" | "Consejo de Ricks" | "Familia Smith" | "Independiente";

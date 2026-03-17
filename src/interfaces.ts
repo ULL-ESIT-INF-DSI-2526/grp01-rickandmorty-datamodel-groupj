@@ -1,4 +1,4 @@
-import { estadosDimension, tiposEspecie, tiposInvento } from "./types";
+import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion } from "./types";
 
 
 
@@ -24,6 +24,24 @@ export interface IDimension extends IAtributos {
   nivelTec: number;
 
   /** Descripcion adicional de la dimension */
+  descripcion: string;
+}
+
+/**
+ * Interfaz que define los atributos específicos de un __personaje__ en el sistema.
+ */
+export interface IPersonaje extends IAtributos {
+  /** Especie del personaje - referencia a la especie del personaje */
+  especie: string; 
+  /** Dimension de origen del personaje - referencia a la dimension del personaje */
+  dimension: string;
+  /** Estado del personaje */
+  estado: estadosPersonaje;
+  /** Afiliación del personaje */
+  afiliacion: tipoAfiliacion;
+  /** Nivel de inteligencia del personaje, esta entre 1 y 10 */
+  nivelInteligencia: number;
+  /** Descripcion adicional del personaje */
   descripcion: string;
 }
 
