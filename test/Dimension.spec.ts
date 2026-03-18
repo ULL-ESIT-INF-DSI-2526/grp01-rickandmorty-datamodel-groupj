@@ -43,4 +43,29 @@ describe("Tests constructor de clase Dimension", () => {
         }),
     ).toThrow("El nombre no puede ser vacio");
   });
+
+  test("error de estado vacio o inválido", () => {
+    expect(
+      () =>
+        new Dimension({
+          id: "D1",
+          nombre: "C-137",
+          descripcion: "Original",
+          estadoDim: "",
+          nivelTec: 7,
+        } as any),
+    ).toThrow("El estado de la dimension no puede ser vacia o es invalida");
+
+    expect(
+      () =>
+        new Dimension({
+          id: "D1",
+          nombre: "C-137",
+          descripcion: "Original",
+          estadoDim: "pendiente" as any,
+          nivelTec: 7,
+        } as any),
+    ).toThrow("El estado de la dimension no puede ser vacia o es invalida");
+  });
+  
 });
