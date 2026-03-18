@@ -30,6 +30,9 @@ export class Dimension implements IDimension {
         `El estado de la dimension no puede ser vacia o es invalida`,
       );
     }
+    if (data.nivelTec < 1 || 10 < data.nivelTec) {
+      throw new Error(`Indice fuera de rango`);
+    }
 
     this.id = data.id;
     this.nombre = data.nombre;
