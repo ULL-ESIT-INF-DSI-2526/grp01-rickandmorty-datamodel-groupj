@@ -93,4 +93,12 @@ describe("Tests constructor de clase Dimension", () => {
         }),
     ).toThrow("Indice fuera de rango");
   });
+
+  test("atributos de la clase", () => {
+    expect(dimension.id).toBe("D1");
+    expect(dimension.nombre).toBe("C-137");
+    expect(dimension.descripcion).toBe("Original");
+    expect(dimension.estadoDim).toBe("activa");
+    expect(dimension.nivelTec).toBe(7);
+  });
 });
