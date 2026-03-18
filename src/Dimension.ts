@@ -21,6 +21,15 @@ export class Dimension implements IDimension {
     if (!data.nombre || data.nombre.trim().length === 0) {
       throw new Error(`El nombre no puede ser vacio`);
     }
+    if (
+      !data.estadoDim ||
+      data.estadoDim.trim().length === 0 ||
+      !ESTADOS_VALIDOS.includes(data.estadoDim)
+    ) {
+      throw new Error(
+        `El estado de la dimension no puede ser vacia o es invalida`,
+      );
+    }
 
     this.id = data.id;
     this.nombre = data.nombre;
