@@ -67,5 +67,30 @@ describe("Tests constructor de clase Dimension", () => {
         } as any),
     ).toThrow("El estado de la dimension no puede ser vacia o es invalida");
   });
-  
+
+  test("error de rango (negativo)", () => {
+    expect(
+      () =>
+        new Dimension({
+          id: "D1",
+          nombre: "C-137",
+          descripcion: "Original",
+          estadoDim: "activa",
+          nivelTec: -1,
+        }),
+    ).toThrow("Indice fuera de rango");
+  });
+
+  test("error de rango (positivo)", () => {
+    expect(
+      () =>
+        new Dimension({
+          id: "D1",
+          nombre: "C-137",
+          descripcion: "Original",
+          estadoDim: "activa",
+          nivelTec: 11,
+        }),
+    ).toThrow("Indice fuera de rango");
+  });
 });
