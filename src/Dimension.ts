@@ -8,6 +8,8 @@ import { estadosDimension } from "./types";
  * @param estadoDim - Estado actual de la dimension
  * @param nivelTec - Nivel tecnologico de la dimension, debe estar entre 1 y 10
  * @param descripcion - Descripción adicional de la dimension
+ * 
+ * @throws Error si el ID, nombre o descripcion están vacías; o si el nivel de tecnología es menor que 0 o mayor que 10.
  */
 export class Dimension implements IDimension {
   constructor(
