@@ -16,6 +16,9 @@ export class Localizacion implements ILocalizacion {
     if (!nombre || nombre.trim().length === 0) {
       throw new Error("El nombre no puede ser vacio");
     }
+    if (!dimension || dimension.trim().length === 0) {
+      throw new Error("El ID de referencia a dimension no puede ser vacio")
+    }
     this.id = id;
     this.nombre = nombre;
     this.tipo = tipo;
