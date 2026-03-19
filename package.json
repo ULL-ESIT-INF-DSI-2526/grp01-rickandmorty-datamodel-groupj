@@ -4,9 +4,7 @@
   "description": "[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/U8NqX9JL)",
   "main": "index.js",
   "scripts": {
-    "ejer1": "tsc-watch --onSuccess \"node dist/ejercicio-1.js\"",
-    "ejer2": "tsc-watch --onSuccess \"node dist/ejercicio-2.js\"",
-    "ejer3": "tsc-watch --onSuccess \"node dist/ejercicio-3.js\"",
+    "dev": "tsc-watch --onSuccess \"node dist/\"",
     "doc": "typedoc",
     "test": "vitest run",
     "coverage": "vitest run --coverage"

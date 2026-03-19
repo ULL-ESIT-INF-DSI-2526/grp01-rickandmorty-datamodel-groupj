@@ -11,6 +11,9 @@ export interface IAtributos {
 
   /** Nombre del objeto */
   nombre: string;
+
+  /** Descripcion adicional del objeto */
+  descripcion: string;
 }
 
 /**
@@ -22,9 +25,6 @@ export interface IDimension extends IAtributos {
 
   /** Nivel tecnologico de la dimension, esta entre 1 y 10 */
   nivelTec: number;
-
-  /** Descripcion adicional de la dimension */
-  descripcion: string;
 }
 
 /**
@@ -41,8 +41,6 @@ export interface IPersonaje extends IAtributos {
   afiliacion: tipoAfiliacion;
   /** Nivel de inteligencia del personaje, esta entre 1 y 10 */
   nivelInteligencia: number;
-  /** Descripcion adicional del personaje */
-  descripcion: string;
 }
 
 
@@ -56,8 +54,6 @@ export interface IEspecie extends IAtributos {
   tipo: tiposEspecie;
   /** Esperanza de vida de la especie */
   esperanzaVida: number;
-  /** Descripcion adicional de la especie */
-  descripcion: string;
 }
 
 /**
@@ -70,8 +66,6 @@ export interface IInvento extends IAtributos {
   tipo: tiposInvento;
   /** Nivel de peligro del invento, esta entre 1 y 10 */
   nivelPeligro: number;
-  /** Descripcion adicional del invento */
-  descripcion: string;
 }
  
 
