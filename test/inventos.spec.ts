@@ -49,4 +49,69 @@ describe("Test constructor Invento ", () => {
             );
         }).toThrow("El nivel de peligro debe estar entre 1 y 10.");
     });
+
+    test("Deberia lanzar un error si el id esta vacio", () => {
+        expect(() => {
+            new Invento(
+                "",
+                "Portal Gun",
+                "Rick Sanchez",
+                "Dispositivo de viaje",
+                9,
+                "Un dispositivo que permite viajar entre dimensiones."
+            );
+        }).toThrow("ID vacío");
+    });
+
+    test("Deberia lanzar un error si el nombre esta vacio", () => {
+        expect(() => {
+            new Invento(
+                "pg137",
+                "",
+                "Rick Sanchez",
+                "Dispositivo de viaje",
+                9,
+                "Un dispositivo que permite viajar entre dimensiones."
+            );
+        }).toThrow("Nombre vacío");
+    });
+
+    test("Deberia lanzar un error si el inventor esta vacio", () => {
+        expect(() => {
+            new Invento(
+                "pg137",
+                "Portal Gun",
+                "",
+                "Dispositivo de viaje",
+                9,
+                "Un dispositivo que permite viajar entre dimensiones."
+            );
+        }).toThrow("Inventor vacío");
+    });
+
+    test("Deberia lanzar un error si el tipo esta vacio", () => {
+        expect(() => {
+            new Invento(
+                "pg137",
+                "Portal Gun",
+                "Rick Sanchez",
+                "",
+                9,
+                "Un dispositivo que permite viajar entre dimensiones."
+            );
+        }).toThrow("Tipo de invento vacío");
+    });
+
+    test("Deberia lanzar un error si la descripcion esta vacia", () => {
+        expect(() => {
+            new Invento(
+                "pg137",
+                "Portal Gun",
+                "Rick Sanchez",
+                "Dispositivo de viaje",
+                9,
+                ""
+            );
+        }).toThrow("Descripción vacía");
+    });
 });

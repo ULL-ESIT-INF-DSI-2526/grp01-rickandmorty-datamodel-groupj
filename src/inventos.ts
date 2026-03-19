@@ -20,6 +20,11 @@ export class Invento implements IInvento {
         public nivelPeligro: number,
         public descripcion: string
     ) {
+        if (id.trim() === "") throw new Error("ID vacío");
+        if (nombre.trim() === "") throw new Error("Nombre vacío");
+        if (inventor.trim() === "") throw new Error("Inventor vacío");
+        if (descripcion.trim() === "") throw new Error("Descripción vacía");
+        if (tipo.trim() === "") throw new Error("Tipo de invento vacío");
         if (nivelPeligro < 1 || nivelPeligro > 10) {
             throw new Error("El nivel de peligro debe estar entre 1 y 10.");
         }
