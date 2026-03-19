@@ -42,4 +42,18 @@ describe("test constructor de clase localizacion", () => {
         ) as any,
     ).toThrow(`La ID no puede ser vacia`);
   });
+
+  test("error de nombre vacio", () => {
+    expect(
+      () =>
+        new Localizacion(
+          "L1",
+          "",
+          "Planeta",
+          "D1",
+          2000,
+          "Ecosistema oceanico, arboleado y rocoso.",
+        ) as any,
+    ).toThrow(`El nombre no puede ser vacio`);
+  });
 });
