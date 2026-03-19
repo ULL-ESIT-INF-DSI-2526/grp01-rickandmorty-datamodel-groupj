@@ -1,6 +1,4 @@
-import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion } from "./types";
-
-
+import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion, tipoLocalizacion } from "./types";
 
 /**
  * Interfaz que define los atributos comunes de los objetos en el sistema.
@@ -8,10 +6,8 @@ import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfi
 export interface IAtributos {
   /** ID unico del objeto */
   id: string;
-
   /** Nombre del objeto */
   nombre: string;
-
   /** Descripcion adicional del objeto */
   descripcion: string;
 }
@@ -22,7 +18,6 @@ export interface IAtributos {
 export interface IDimension extends IAtributos {
   /** Estado actual de la dimension */
   estadoDim: estadosDimension;
-
   /** Nivel tecnologico de la dimension, esta entre 1 y 10 */
   nivelTec: number;
 }
@@ -69,3 +64,16 @@ export interface IInvento extends IAtributos {
 }
  
 
+/**
+ * Interfaz que define los atriutos de las __localizaciones__ en el sistema.
+ */
+export interface ILocalizacion extends IAtributos {
+  /** Tipo de localizacion */
+  tipo: tipoLocalizacion;
+  /** Nivel de peligro del invento, esta entre 1 y 10 */
+  nivelPeligro: number;
+  /** Dimension de la localizacion - referencia a la dimension */
+  dimension: string;
+  /**Población aproximada de habitantes*/
+  poblacionAproximada: number;
+}

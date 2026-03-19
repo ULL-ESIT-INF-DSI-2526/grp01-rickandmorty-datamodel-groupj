@@ -8,3 +8,5 @@ export type tiposInvento = "Arma" | "Dispositivo de viaje" | "Biotecnología" | 
 export type estadosPersonaje = "vivo" | "muerto" | "desconocido" | "robot sustituto" | "clon";
 /** Valores posibles para la afiliación de un personaje */
 export type tipoAfiliacion = "Federación Galáctica" | "Consejo de Ricks" | "Familia Smith" | "Independiente";
+/** Valores posibles para el tipo de localizacion */
+export type tipoLocalizacion = "Planeta" | "Estación espacial" | "Dimensión de bolsillo" | "Simulación virtual";
