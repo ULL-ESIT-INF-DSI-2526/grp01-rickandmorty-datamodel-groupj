@@ -28,4 +28,18 @@ describe("test constructor de clase localizacion", () => {
       "Ecosistema oceanico, arboleado y rocoso.",
     );
   });
+
+  test("error de ID vacia", () => {
+    expect(
+      () =>
+        new Localizacion(
+          "",
+          "Tierra C-137",
+          "Planeta",
+          "D1",
+          2000,
+          "Ecosistema oceanico, arboleado y rocoso.",
+        ) as any,
+    ).toThrow(`La ID no puede ser vacia`);
+  });
 });
