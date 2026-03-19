@@ -70,8 +70,6 @@ export interface IInvento extends IAtributos {
 export interface ILocalizacion extends IAtributos {
   /** Tipo de localizacion */
   tipo: tipoLocalizacion;
-  /** Nivel de peligro del invento, esta entre 1 y 10 */
-  nivelPeligro: number;
   /** Dimension de la localizacion - referencia a la dimension */
   dimension: string;
   /**Población aproximada de habitantes*/
