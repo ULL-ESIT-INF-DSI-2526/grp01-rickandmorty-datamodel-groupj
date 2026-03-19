@@ -1,4 +1,4 @@
-import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion } from "./types";
+import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion, tipoLocalizacion } from "./types";
 
 
 
@@ -74,4 +74,16 @@ export interface IInvento extends IAtributos {
   descripcion: string;
 }
  
-
+/**
+ * Interfaz que define los atributos de las __localizaciones__ en el sistema.
+ */
+export interface ILocalizacion extends IAtributos {
+  /** Tipo de localizacion */
+  tipo: tipoLocalizacion;
+  /** Dimension de origen de la localizacion - referencia a la dimension de la localizacion */
+  dimension: string;
+  /** Numero de habitantes */
+  poblacion: number;
+  /** Descripcion adicional de la localizacion */
+  descripcion: string;
+}
