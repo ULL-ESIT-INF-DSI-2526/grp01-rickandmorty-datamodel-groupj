@@ -56,4 +56,18 @@ describe("test constructor de clase localizacion", () => {
         ) as any,
     ).toThrow(`El nombre no puede ser vacio`);
   });
+
+  test("error de referencia de dimension vacia", () => {
+    expect(
+      () =>
+        new Localizacion(
+          "L1",
+          "Tierra C-137",
+          "Planeta",
+          "",
+          2000,
+          "Ecosistema oceanico, arboleado y rocoso.",
+        ) as any,
+    ).toThrow(`El ID de referencia a dimension no puede ser vacio`);
+  });
 });
