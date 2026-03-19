@@ -19,6 +19,9 @@ export class Localizacion implements ILocalizacion {
     if (!dimension || dimension.trim().length === 0) {
       throw new Error("El ID de referencia a dimension no puede ser vacio")
     }
+    if (poblacion < 1) {
+      throw new Error("Cantidad de poblacion invalida")
+    }
     this.id = id;
     this.nombre = nombre;
     this.tipo = tipo;
