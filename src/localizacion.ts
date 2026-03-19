@@ -10,6 +10,9 @@ export class Localizacion implements ILocalizacion {
     public poblacion: number,
     public descripcion: string,
   ) {
+    if (!id || id.trim().length === 0) {
+      throw new Error("La ID no puede ser vacia")
+    }
     this.id = id;
     this.nombre = nombre;
     this.tipo = tipo;
