@@ -70,4 +70,18 @@ describe("test constructor de clase localizacion", () => {
         ) as any,
     ).toThrow(`El ID de referencia a dimension no puede ser vacio`);
   });
+
+  test("error de poblacion invalida", () => {
+    expect(
+      () =>
+        new Localizacion(
+          "L1",
+          "Tierra C-137",
+          "Planeta",
+          "D1",
+          -1,
+          "Ecosistema oceanico, arboleado y rocoso.",
+        ) as any,
+    ).toThrow(`Cantidad de poblacion invalida`);
+  });
 });
