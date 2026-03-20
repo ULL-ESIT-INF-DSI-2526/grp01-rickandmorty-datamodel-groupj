@@ -310,6 +310,62 @@ export class GestorMultiversal {
     });
   }
 
+  // Actualizar localización
+  updateLocalizacion(id: string, cambios: { nombre?: string; tipo?: tipoLocalizacion; poblacionAproximada?: number; dimension?: string | null; descripcion?: string }): void {
+    const localizacion = this.localizaciones.find(l => l.id === id);
+    if (!localizacion) throw new Error("La localización no existe");
+
+    // Validar nombre
+    if (cambios.nombre !== undefined) {
+      if (cambios.nombre.trim() === "") {
+        throw new Error("El nombre no puede estar vacío");
+      }
+    }
+
+    // Validar dimensión
+    if (cambios.dimension !== undefined) {
+      if (cambios.dimension === null) {
+        throw new Error("La localización debe tener una dimensión");
+      }
+      const dimensionExiste = this.dimensiones.find(d => d.id === cambios.dimension);
+      if (!dimensionExiste) throw new Error("Origen de la localización desconocida");
+    }
+
+    // Validar población aproximada
+    if (cambios.poblacionAproximada !== undefined) {
+      if (cambios.poblacionAproximada < 0) {
+        throw new Error("La población no puede ser negativa");
+      }
+    }
+
+    // Validar descripción
+    if (cambios.descripcion !== undefined) {
+      if (cambios.descripcion.trim() === "") {
+        throw new Error("La descripción no puede estar vacía");
+      }
+    }
+
+    // Comprobar si el cambio de nombre, tipo o dimensión generaría una localización duplicada
+    const nombreAComprobar = cambios.nombre !== undefined ? cambios.nombre : localizacion.nombre;
+    const tipoAComprobar = cambios.tipo !== undefined ? cambios.tipo : localizacion.tipo;
+    const dimensionAComprobar = cambios.dimension !== undefined ? cambios.dimension : localizacion.dimension;
+
+    const duplicado = this.localizaciones.some(l =>
+      l.id !== id &&
+      this.normalize(l.nombre) === this.normalize(nombreAComprobar) &&
+      l.tipo === tipoAComprobar &&
+      l.dimension === dimensionAComprobar
+    );
+    if (duplicado) throw new Error("Localización duplicada");
+
+    // Si no se ha lanzado ningún error, se aplican los cambios
+    if (cambios.nombre !== undefined) localizacion.nombre = cambios.nombre;
+    if (cambios.tipo !== undefined) localizacion.tipo = cambios.tipo;
+    if (cambios.poblacionAproximada !== undefined) localizacion.poblacionAproximada = cambios.poblacionAproximada;
+    if (cambios.dimension !== undefined) localizacion.dimension = cambios.dimension;
+    if (cambios.descripcion !== undefined) localizacion.descripcion = cambios.descripcion;
+  }
+
   // métodos para inventos
 
   lengthInventos(): number {
