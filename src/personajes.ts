@@ -20,8 +20,8 @@ export class Personaje implements IPersonaje {
   constructor (
     public readonly id: string,
     public nombre: string,
-    public especie: string, // ID de la especie
-    public dimension: string, // ID de la dimensión de origen
+    public especie: string | null, // ID de la especie
+    public dimension: string | null, // ID de la dimensión de origen
     public estado: estadosPersonaje,
     public afiliacion: tipoAfiliacion,
     public nivelInteligencia: number,

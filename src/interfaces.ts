@@ -27,9 +27,9 @@ export interface IDimension extends IAtributos {
  */
 export interface IPersonaje extends IAtributos {
   /** Especie del personaje - referencia a la especie del personaje */
-  especie: string; 
+  especie: string | null; 
   /** Dimension de origen del personaje - referencia a la dimension del personaje */
-  dimension: string;
+  dimension: string | null;
   /** Estado del personaje */
   estado: estadosPersonaje;
   /** Afiliación del personaje */
@@ -44,7 +44,7 @@ export interface IPersonaje extends IAtributos {
  */
 export interface IEspecie extends IAtributos {
   /** Origen de la especie - referencia al planeta o dimensión de la especie */
-  origen: string;
+  origen: string | null;
   /** Tipo de especie*/
   tipo: tiposEspecie;
   /** Esperanza de vida de la especie */
@@ -56,7 +56,7 @@ export interface IEspecie extends IAtributos {
  */
 export interface IInvento extends IAtributos {
   /** Nombre del inventor del invento - referencia al personaje */
-  inventor: string;
+  inventor: string | null;
   /** Tipo de invento */
   tipo: tiposInvento;
   /** Nivel de peligro del invento, esta entre 1 y 10 */
@@ -71,7 +71,7 @@ export interface ILocalizacion extends IAtributos {
   /** Tipo de localizacion */
   tipo: tipoLocalizacion;
   /** Dimension de la localizacion - referencia a la dimension */
-  dimension: string;
+  dimension: string | null;
   /**Población aproximada de habitantes*/
   poblacionAproximada: number;
 }

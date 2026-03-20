@@ -17,7 +17,7 @@ export class Especie implements IEspecie {
   constructor (
     public readonly id: string,
     public nombre: string,
-    public origen: string,
+    public origen: string | null,
     public tipo: tiposEspecie,
     public esperanzaVida: number,
     public descripcion: string

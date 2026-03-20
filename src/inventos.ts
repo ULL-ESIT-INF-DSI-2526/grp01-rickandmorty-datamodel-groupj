@@ -15,7 +15,7 @@ export class Invento implements IInvento {
     constructor(
         public readonly id: string,
         public nombre: string,
-        public inventor: string,
+        public inventor: string | null,
         public tipo: tiposInvento,
         public nivelPeligro: number,
         public descripcion: string

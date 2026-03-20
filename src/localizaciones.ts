@@ -20,7 +20,7 @@ export class Localizacion implements ILocalizacion {
     public nombre: string,
     public tipo: tipoLocalizacion,
     public poblacionAproximada: number,
-    public dimension: string, // ID de la dimensión
+    public dimension: string | null, // ID de la dimensión
     public descripcion: string
   ) {
     if (id.trim() === "") throw new Error("ID vacío");
