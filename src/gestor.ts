@@ -52,46 +52,38 @@ export class GestorMultiversal {
     const dimension = this.dimensiones.find(d => d.id === id);
     if (!dimension) throw new Error("La dimensión no existe");
 
-    let cambio_nombre = false, cambio_desc = false, cambio_nivel = false, cambio_estado = false;
-
-    // Comprobación del nombre
+    // Validar nombre
     if (cambios.nombre !== undefined) {
       if (cambios.nombre.trim() === "") {
         throw new Error("El nombre no puede estar vacío");
-      } else if(this.dimensiones.some(d => this.normalize(d.nombre) === this.normalize(cambios.nombre) && d.id !== id)) {
+      } else if (this.dimensiones.some(d => this.normalize(d.nombre) === this.normalize(cambios.nombre) && d.id !== id)) {
         throw new Error("El nombre de la dimensión ya existe");
       }
-      cambio_nombre = true;
     }
-    // Comprobación del estado
-    if (cambios.estadoDim !== undefined) {
-      cambio_estado = true;
-    }
-    // Comprobación del nivel tecnológico
+
+    // Validar nivel tecnológico
     if (cambios.nivelTec !== undefined) {
       if (cambios.nivelTec < 1 || cambios.nivelTec > 10) {
         throw new Error("El nivel tecnológico debe estar entre 1 y 10");
       }
-      cambio_nivel = true;
     }
-    // Comprobación de la descripción
+
+    // Validar descripción
     if (cambios.descripcion !== undefined) {
       if (cambios.descripcion.trim() === "") {
         throw new Error("La descripción no puede estar vacía");
       }
-      cambio_desc = true;
     }
 
-    // Aplicar cambios
-    if (cambio_nombre) dimension.nombre = cambios.nombre;
-    if (cambio_estado) dimension.estadoDim = cambios.estadoDim;
-    if (cambio_nivel) dimension.nivelTec = cambios.nivelTec;
-    if (cambio_desc) dimension.descripcion = cambios.descripcion;
+    // Aplicar cambios solo si toda la validación pasó
+    if (cambios.nombre !== undefined) dimension.nombre = cambios.nombre;
+    if (cambios.estadoDim !== undefined) dimension.estadoDim = cambios.estadoDim;
+    if (cambios.nivelTec !== undefined) dimension.nivelTec = cambios.nivelTec;
+    if (cambios.descripcion !== undefined) dimension.descripcion = cambios.descripcion;
 
   }
 
   // métodos para personajes
-
   lengthPersonajes(): number {
     return this.personajes.length;
   }
@@ -124,6 +116,69 @@ export class GestorMultiversal {
     this.inventos.forEach(i => {
       if (i.inventor === id) i.inventor = null;
     })
+  }
+
+  updatePersonaje(id: string, cambios: { nombre?: string; especie?: string | null; dimension?: string | null; 
+                                        estado?: estadosPersonaje; afiliacion?: tipoAfiliacion; 
+                                        nivelInteligencia?: number; descripcion?: string }): void {
+    const personaje = this.personajes.find(p => p.id === id);
+    if (!personaje) throw new Error("El personaje no existe");
+    
+
+    // Validar nombre
+    if (cambios.nombre !== undefined) {
+      if (cambios.nombre.trim() === "") {
+        throw new Error("El nombre no puede estar vacío");
+      }
+    }
+
+    // Validar especie
+    if (cambios.especie !== undefined && cambios.especie !== null) {
+      const especieExiste = this.especies.find(e => e.id === cambios.especie);
+      if (!especieExiste) throw new Error("La especie no existe");
+    }
+
+    // Validar dimensión
+    if (cambios.dimension !== undefined && cambios.dimension !== null) {
+      const dimensionExiste = this.dimensiones.find(d => d.id === cambios.dimension);
+      if (!dimensionExiste) throw new Error("La dimensión no existe");
+    }
+
+    // Validar nivel de inteligencia
+    if (cambios.nivelInteligencia !== undefined) {
+      if (cambios.nivelInteligencia <= 0 || cambios.nivelInteligencia > 10) {
+        throw new Error("El nivel de inteligencia debe estar entre 1 y 10");
+      }
+    }
+
+    // Validar descripción
+    if (cambios.descripcion !== undefined) {
+      if (cambios.descripcion.trim() === "") {
+        throw new Error("La descripción no puede estar vacía");
+      }
+    }
+
+    // Comprobar si el cambio de nombre, especie o dimensión generaría un personaje duplicado
+    const nombreAComprobar = cambios.nombre !== undefined ? cambios.nombre : personaje.nombre;
+    const especieAComprobar = cambios.especie !== undefined ? cambios.especie : personaje.especie;
+    const dimensionAComprobar = cambios.dimension !== undefined ? cambios.dimension : personaje.dimension;
+
+    const duplicado = this.personajes.some(p =>
+      p.id !== id &&
+      this.normalize(p.nombre) === this.normalize(nombreAComprobar) &&
+      p.especie === especieAComprobar &&
+      p.dimension === dimensionAComprobar
+    );
+    if (duplicado) throw new Error("Personaje duplicado");
+
+    // Si no se ha lanzado ningún error, se aplican los cambios
+    if (cambios.nombre !== undefined) personaje.nombre = cambios.nombre;
+    if (cambios.especie !== undefined) personaje.especie = cambios.especie;
+    if (cambios.dimension !== undefined) personaje.dimension = cambios.dimension;
+    if (cambios.estado !== undefined) personaje.estado = cambios.estado;
+    if (cambios.afiliacion !== undefined) personaje.afiliacion = cambios.afiliacion;
+    if (cambios.nivelInteligencia !== undefined) personaje.nivelInteligencia = cambios.nivelInteligencia;
+    if (cambios.descripcion !== undefined) personaje.descripcion = cambios.descripcion;
   }
 
 
