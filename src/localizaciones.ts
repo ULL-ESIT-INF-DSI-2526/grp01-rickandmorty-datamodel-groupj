@@ -25,7 +25,8 @@ export class Localizacion implements ILocalizacion {
   ) {
     if (id.trim() === "") throw new Error("ID vacío");
     if (nombre.trim() === "") throw new Error("Nombre vacío");
-    if (dimension.trim() === "") throw new Error("Dimensión vacía");
+    if (typeof dimension === "string")
+      if (dimension.trim() === "") throw new Error("Dimensión vacía");
     if (descripcion.trim() === "") throw new Error("Descripción vacía");  
     if (poblacionAproximada < 0) throw new Error("La población no puede ser negativa");  
   }

@@ -24,7 +24,8 @@ export class Especie implements IEspecie {
   ) {
     if (id.trim() === "") throw new Error("ID vacío");
     if (nombre.trim() === "") throw new Error("Nombre vacío");
-    if (origen.trim() === "") throw new Error("Origen vacío");
+    if (typeof origen === "string")
+      if (origen.trim() === "") throw new Error("Origen vacío");
     if (descripcion.trim() === "") throw new Error("Descripción vacía");
     if (esperanzaVida <= 0) throw new Error("Esperanza de vida inválida"); 
   }

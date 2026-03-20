@@ -29,8 +29,10 @@ export class Personaje implements IPersonaje {
   ){
     if (id.trim() === "") throw new Error("ID vacío");
     if (nombre.trim() === "") throw new Error("Nombre vacío");
-    if (especie.trim() === "") throw new Error("Especie vacía");
-    if (dimension.trim() === "") throw new Error("Dimensión de origen vacía");
+    if (typeof especie === "string")
+      if (especie.trim() === "") throw new Error("Especie vacía");
+    if (typeof dimension === "string")
+      if (dimension.trim() === "") throw new Error("Dimensión de origen vacía");
     if (descripcion.trim() === "") throw new Error("Descripción vacía");
     if (nivelInteligencia <= 0 || nivelInteligencia > 10) throw new Error("Nivel de inteligencia inválido");     
   }
