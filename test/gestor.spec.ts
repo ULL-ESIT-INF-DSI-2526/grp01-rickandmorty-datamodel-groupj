@@ -69,6 +69,66 @@ describe("GestorMultiversal - Dimensiones", () => {
     expect(gestor.lengthLocalizaciones()).toBe(0);
   });
 
+  test("updateDimension inexistente", () => {
+    expect(() => gestor.updateDimension("X", { descripcion: "nueva" })).toThrow();
+  });
+
+  test("updateDimension actualiza descripcion", () => {
+    const d = new Dimension("C-1", "D1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    gestor.updateDimension("C-1", { descripcion: "descripcion actualizada" });
+
+    expect(d.descripcion).toBe("descripcion actualizada");
+  });
+
+  test("updateDimension actualiza estado y nivel", () => {
+    const d = new Dimension("C-1", "D1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    gestor.updateDimension("C-1", { estadoDim: "destruida", nivelTec: 9 });
+
+    expect(d.estadoDim).toBe("destruida");
+    expect(d.nivelTec).toBe(9);
+  });
+
+  test("updateDimension nombre vacio", () => {
+    const d = new Dimension("C-1", "D1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    expect(() => gestor.updateDimension("C-1", { nombre: "   " })).toThrow();
+  });
+
+  test("updateDimension nivel fuera de rango", () => {
+    const d = new Dimension("C-1", "D1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    expect(() => gestor.updateDimension("C-1", { nivelTec: 11 })).toThrow();
+  });
+
+  test("updateDimension descripcion vacia", () => {
+    const d = new Dimension("C-1", "D1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    expect(() => gestor.updateDimension("C-1", { descripcion: "" })).toThrow();
+  });
+
+  test("updateDimension nombre duplicado", () => {
+    const d1 = new Dimension("C-1", "Dimension 1", "activa", 5, "desc");
+    const d2 = new Dimension("C-2", "Dimension 2", "activa", 5, "desc");
+    gestor.addDimension(d1);
+    gestor.addDimension(d2);
+
+    expect(() => gestor.updateDimension("C-2", { nombre: "dimension 1" })).toThrow();
+  });
+
+  test("updateDimension permite mantener el mismo nombre", () => {
+    const d = new Dimension("C-1", "Dimension 1", "activa", 5, "desc");
+    gestor.addDimension(d);
+
+    expect(() => gestor.updateDimension("C-1", { nombre: "Dimension 1" })).not.toThrow();
+  });
+
 });
 
 describe("GestorMultiversal - Especies", () => {

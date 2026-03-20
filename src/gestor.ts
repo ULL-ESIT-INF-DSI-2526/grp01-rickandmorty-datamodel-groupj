@@ -3,6 +3,7 @@ import { Personaje } from "./personajes";
 import { Dimension } from "./Dimension";
 import { Invento } from "./inventos";
 import { Especie } from "./especies";
+import { estadosDimension, estadosPersonaje, tipoAfiliacion, tiposEspecie, tiposInvento, tipoLocalizacion } from "./types";
 
 export class GestorMultiversal {
   private personajes: Personaje[] = [];
@@ -45,6 +46,39 @@ export class GestorMultiversal {
       if (e.origen === id) e.origen = null;
     });
   }
+
+  updateDimension(id: string, cambios: { nombre?: string; estadoDim?: estadosDimension; nivelTec?: number; descripcion?: string }): void {
+    const dimension = this.dimensiones.find(d => d.id === id);
+    if (!dimension) throw new Error("La dimensión no existe");
+    // Actualizar el nombre
+    if (cambios.nombre !== undefined) {
+      if (cambios.nombre.trim() === "") {
+        throw new Error("El nombre no puede estar vacío");
+      } else if(this.dimensiones.some(d => this.normalize(d.nombre) === this.normalize(cambios.nombre) && d.id !== id)) {
+        throw new Error("El nombre de la dimensión ya existe");
+      }
+      dimension.nombre = cambios.nombre;
+    }
+    // Actualizar el estado
+    if (cambios.estadoDim !== undefined) {
+      dimension.estadoDim = cambios.estadoDim;
+    }
+    // Actualizar el nivel tecnológico
+    if (cambios.nivelTec !== undefined) {
+      if (cambios.nivelTec < 1 || cambios.nivelTec > 10) {
+        throw new Error("El nivel tecnológico debe estar entre 1 y 10");
+      }
+      dimension.nivelTec = cambios.nivelTec;
+    }
+    // Actualizar la descripción
+    if (cambios.descripcion !== undefined) {
+      if (cambios.descripcion.trim() === "") {
+        throw new Error("La descripción no puede estar vacía");
+      }
+      dimension.descripcion = cambios.descripcion;
+    }
+  }
+
 
   // métodos para personajes
 
