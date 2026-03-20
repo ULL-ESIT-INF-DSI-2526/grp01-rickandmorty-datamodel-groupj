@@ -16,8 +16,8 @@ export class Dimension implements IDimension {
     public readonly id: string,
     public nombre: string,
     public estadoDim: estadosDimension,
-    public descripcion: string,
     public nivelTec: number,
+    public descripcion: string,
   ) {
     if (!id || id.trim().length === 0) {
       throw new Error("La ID no puede ser vacia");
