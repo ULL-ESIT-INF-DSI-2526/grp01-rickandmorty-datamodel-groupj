@@ -395,7 +395,63 @@ export class GestorMultiversal {
     if (!existe) throw new Error("El invento no existe");
     // se elimina el invento
     this.inventos = this.inventos.filter(i => i.id !== id);
-  }  
+  }
+
+  // Actualizar invento
+  updateInvento(id: string, cambios: { nombre?: string; inventor?: string | null; tipo?: tiposInvento; nivelPeligro?: number; descripcion?: string }): void {
+    const invento = this.inventos.find(i => i.id === id);
+    if (!invento) throw new Error("El invento no existe");
+
+    // Validar nombre
+    if (cambios.nombre !== undefined) {
+      if (cambios.nombre.trim() === "") {
+        throw new Error("El nombre no puede estar vacío");
+      }
+    }
+
+    // Validar inventor
+    if (cambios.inventor !== undefined) {
+      if (cambios.inventor === null) {
+        throw new Error("El invento debe tener un inventor");
+      }
+      const inventorExiste = this.personajes.find(p => p.id === cambios.inventor);
+      if (!inventorExiste) throw new Error("Inventor desconocido");
+    }
+
+    // Validar nivel de peligro
+    if (cambios.nivelPeligro !== undefined) {
+      if (cambios.nivelPeligro < 1 || cambios.nivelPeligro > 10) {
+        throw new Error("El nivel de peligro debe estar entre 1 y 10.");
+      }
+    }
+
+    // Validar descripción
+    if (cambios.descripcion !== undefined) {
+      if (cambios.descripcion.trim() === "") {
+        throw new Error("La descripción no puede estar vacía");
+      }
+    }
+
+    // Comprobar si el cambio de nombre, tipo o inventor generaría un invento duplicado
+    const nombreAComprobar = cambios.nombre !== undefined ? cambios.nombre : invento.nombre;
+    const tipoAComprobar = cambios.tipo !== undefined ? cambios.tipo : invento.tipo;
+    const inventorAComprobar = cambios.inventor !== undefined ? cambios.inventor : invento.inventor;
+
+    const duplicado = this.inventos.some(i =>
+      i.id !== id &&
+      this.normalize(i.nombre) === this.normalize(nombreAComprobar) &&
+      i.tipo === tipoAComprobar &&
+      i.inventor === inventorAComprobar
+    );
+    if (duplicado) throw new Error("Invento duplicado");
+
+    // Si no se ha lanzado ningún error, se aplican los cambios
+    if (cambios.nombre !== undefined) invento.nombre = cambios.nombre;
+    if (cambios.inventor !== undefined) invento.inventor = cambios.inventor;
+    if (cambios.tipo !== undefined) invento.tipo = cambios.tipo;
+    if (cambios.nivelPeligro !== undefined) invento.nivelPeligro = cambios.nivelPeligro;
+    if (cambios.descripcion !== undefined) invento.descripcion = cambios.descripcion;
+  }
 
   // métodos auxiliares
 
