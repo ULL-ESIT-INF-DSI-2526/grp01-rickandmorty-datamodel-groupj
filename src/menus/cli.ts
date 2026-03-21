@@ -1,5 +1,7 @@
 import prompts from "prompts";
-import { GestorMultiversal } from "./gestor";
+import { GestorMultiversal } from "../gestor.js";
+import { db } from "../Database/db.js";
+import { mostrarMenuDimenison } from "./menuDimension.js";
 
 type OpcionMenuPrincipal =
   | "dimensiones"
@@ -10,9 +12,7 @@ type OpcionMenuPrincipal =
   | "consultas"
   | "salir";
 
-const gestor = new GestorMultiversal();
-
-async function mostrarMenuPrincipal(): Promise<OpcionMenuPrincipal> {
+export async function mostrarMenuPrincipal(): Promise<OpcionMenuPrincipal> {
   const respuesta = await prompts({
     type: "select",
     name: "opcion",
@@ -31,7 +31,7 @@ async function mostrarMenuPrincipal(): Promise<OpcionMenuPrincipal> {
   return respuesta.opcion as OpcionMenuPrincipal;
 }
 
-async function mostrarMenuEntidad(nombre: string): Promise<void> {
+export async function mostrarMenuEntidad(nombre: string): Promise<void> {
   const respuesta = await prompts({
     type: "select",
     name: "accion",
@@ -49,7 +49,7 @@ async function mostrarMenuEntidad(nombre: string): Promise<void> {
   }
 }
 
-async function mostrarMenuConsultas(): Promise<void> {
+export async function mostrarMenuConsultas(): Promise<void> {
   const respuesta = await prompts({
     type: "select",
     name: "consulta",
@@ -67,8 +67,9 @@ async function mostrarMenuConsultas(): Promise<void> {
   }
 }
 
-async function main(): Promise<void> {
-  void gestor;
+export async function main(): Promise<void> {
+  await db.read();
+  const gestor = new GestorMultiversal(db);
   let salir = false;
 
   while (!salir) {
@@ -76,19 +77,19 @@ async function main(): Promise<void> {
 
     switch (opcion) {
       case "dimensiones":
-        await mostrarMenuEntidad("dimensiones");
+        await mostrarMenuDimenison(gestor);
         break;
       case "personajes":
-        await mostrarMenuEntidad("personajes");
+        await mostrarMenuDimenison(gestor);
         break;
       case "especies":
-        await mostrarMenuEntidad("especies");
+        await mostrarMenuDimenison(gestor);
         break;
       case "localizaciones":
-        await mostrarMenuEntidad("localizaciones");
+        await mostrarMenuDimenison(gestor);
         break;
       case "inventos":
-        await mostrarMenuEntidad("inventos");
+        await mostrarMenuDimenison(gestor);
         break;
       case "consultas":
         await mostrarMenuConsultas();
@@ -102,7 +103,3 @@ async function main(): Promise<void> {
     }
   }
 }
-
-main().catch((error: unknown) => {
-  console.error("Error inesperado en la CLI:", error);
-});

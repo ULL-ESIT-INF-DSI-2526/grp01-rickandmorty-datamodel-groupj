@@ -1,0 +1,22 @@
+{
+  "dimension": [
+    {
+      "id": "A1",
+      "nombre": "A",
+      "estadoDim": "activa",
+      "nivelTec": "2",
+      "descripcion": "A"
+    },
+    {
+      "id": "A2",
+      "nombre": "S",
+      "estadoDim": "activa",
+      "nivelTec": "3",
+      "descripcion": "A"
+    }
+  ],
+  "personaje": [],
+  "invento": [],
+  "localizacion": [],
+  "especie": []
+}
