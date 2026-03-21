@@ -122,9 +122,9 @@ export class GestorMultiversal {
 
   //métodos de modificación
 
-  updateDimension(id: string, cambios: { nombre?: string; estadoDim?: estadosDimension;
-                                  nivelTec?: number; descripcion?: string;}): void {
-    this.dimensionesRepo.update(id, cambios);
+  async updateDimension(id: string, cambios: { nombre?: string; estadoDim?: estadosDimension;
+                                  nivelTec?: number; descripcion?: string;}): Promise<void> {
+    await this.dimensionesRepo.update(id, cambios);
   }
 
   updatePersonaje(id: string, cambios: { nombre?: string; especie?: string | null; dimension?: string | null;

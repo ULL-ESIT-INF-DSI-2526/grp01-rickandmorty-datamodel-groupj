@@ -18,8 +18,8 @@ export class RepositorioDimensiones implements IDuplicable<Dimension>, IReposito
   async add(dimension: Dimension): Promise<void>{
     await this._db.read();
 
-    if (this.isDuplicate(dimension).then()) {
-      //throw new Error("Dimensión duplicada");
+    if (await this.isDuplicate(dimension)) {
+       throw new Error("Dimensión duplicada");
     }
     this._db.data.dimension.push(dimension);
     await this._db.write();
@@ -27,7 +27,7 @@ export class RepositorioDimensiones implements IDuplicable<Dimension>, IReposito
 
   async remove(id: string): Promise<void> {
     await this._db.read();
-    if (typeof this.findById(id) === "undefined") throw new Error("El elemento no existe");
+    if (typeof await this.findById(id) === "undefined") throw new Error("El elemento no existe");
     this._db.data.dimension = this._db.data.dimension.filter(i => i.id !== id);
     await this._db.write();
   }
@@ -39,31 +39,31 @@ export class RepositorioDimensiones implements IDuplicable<Dimension>, IReposito
 
   async update(id: string, cambios: Partial<Dimension>): Promise<boolean> {
     await this._db.read();
-    const dimension = this._db.data.dimension.find(d => d.id === id);
+    const dimension = await this.findById(id);
     if (!dimension) throw new Error("La dimensión no existe");
 
     if (cambios.nombre !== undefined) {
       if (cambios.nombre.trim() === "") throw new Error("El nombre no puede estar vacío");
       else if (this._db.data.dimension.some(d => normalize(d.nombre) === normalize(cambios.nombre) && d.id !== id)) 
-        throw new Error("El nombre de la dimensión ya existe");
+      throw new Error("El nombre de la dimensión ya existe");
     }
-
+    
     if (cambios.nivelTec !== undefined) {
       if (cambios.nivelTec < 1 || cambios.nivelTec > 10) {
         throw new Error("El nivel tecnológico debe estar entre 1 y 10");
       }
     }
-
+    
     if (cambios.descripcion !== undefined) {
       if (cambios.descripcion.trim() === "") {
         throw new Error("La descripción no puede estar vacía");
       }
     }
-
-    if (cambios.nombre !== undefined) dimension.nombre = cambios.nombre;
-    if (cambios.estadoDim !== undefined) dimension.estadoDim = cambios.estadoDim;
-    if (cambios.nivelTec !== undefined) dimension.nivelTec = cambios.nivelTec;
-    if (cambios.descripcion !== undefined) dimension.descripcion = cambios.descripcion;
+    
+    if (cambios.nombre !== undefined) {dimension.nombre = cambios.nombre;}
+    if (cambios.estadoDim !== undefined) {dimension.estadoDim = cambios.estadoDim;}
+    if (cambios.nivelTec !== undefined) {dimension.nivelTec = cambios.nivelTec;}
+    if (cambios.descripcion !== undefined) {dimension.descripcion = cambios.descripcion;}
 
     await this._db.write();
     return true;
@@ -75,14 +75,14 @@ export class RepositorioDimensiones implements IDuplicable<Dimension>, IReposito
   } 
 
   async filterByEstado(estado: estadosDimension): Promise<Dimension[]> {
-    this._db.read();
+    await this._db.read();
     return this._db.data.dimension.filter(d => d.estadoDim === estado);
   }
 
   async isDuplicate(other: Dimension): Promise<boolean> { 
-    await this._db.write();
-    const duplicado = this._db.data.dimension.some(d => normalize(d.nombre) === normalize(other.nombre)); 
-    if (duplicado) return true; 
+    await this._db.read();
+    const duplicado = this._db.data.dimension.some(d => d.id === other.id); 
+    if (await duplicado) return true; 
     return false;
   }
 }
