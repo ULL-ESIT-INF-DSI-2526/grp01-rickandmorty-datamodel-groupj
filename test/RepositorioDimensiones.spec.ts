@@ -1,46 +1,47 @@
 import { describe, expect, test, beforeEach } from "vitest";
 import { RepositorioDimensiones } from "../src/RepositorioDimensiones";
 import { Dimension } from "../src/Dimension";
+import {Low} from "lowdb"
+import { Data, DefaultData } from "../src/Database/db";
+import { JSONFilePreset } from "lowdb/node";
 
 let repo: RepositorioDimensiones;
 
-const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-beforeEach(() => {
-  repo = new RepositorioDimensiones(normalize);
+beforeEach(async () => {
+  let newdb: Low<Data> = await JSONFilePreset("src/Database/dbTest.json", DefaultData);
+  repo = new RepositorioDimensiones(newdb);
 });
 
 describe("RepositorioDimensiones", () => {
 
-  test("add correcto", () => {
+  test("add correcto", async () => {
     const d = new Dimension("1", "Dimension 1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    expect(repo.getAll().length).toBe(1);
+    expect(repo.getAll().then.length).toBe(1);
   });
 
-  test("add duplicada por nombre normalizado", () => {
+  test("add duplicada por nombre normalizado", async () => {
     const d1 = new Dimension("1", "Dimensión", "activa", 5, "desc");
     const d2 = new Dimension("2", "dimension", "activa", 5, "desc");
 
-    repo.add(d1);
+    await repo.add(d1);
 
     expect(() => repo.add(d2)).toThrow("Dimensión duplicada");
   });
 
-  test("update correcto", () => {
+  test("update correcto", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    repo.update("1", {
+    await repo.update("1", {
       nombre: "Nueva",
       estadoDim: "destruida",
       nivelTec: 7,
       descripcion: "nueva desc"
     });
 
-    const updated = repo.findById("1");
+    const updated = await repo.findById("1");
 
     expect(updated?.nombre).toBe("Nueva");
     expect(updated?.estadoDim).toBe("destruida");
@@ -49,102 +50,103 @@ describe("RepositorioDimensiones", () => {
   });
 
   test("update lanza error si no existe", () => {
-    expect(() => repo.update("X", { nombre: "test" }))
+    expect(async () => await repo.update("X", { nombre: "test" }))
       .toThrow("La dimensión no existe");
   });
 
-  test("update nombre vacío", () => {
+  test("update nombre vacío", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    expect(() => repo.update("1", { nombre: "" }))
+    expect(async () => await repo.update("1", { nombre: "" }))
       .toThrow("El nombre no puede estar vacío");
   });
 
-  test("update nombre duplicado", () => {
+  test("update nombre duplicado", async () => {
     const d1 = new Dimension("1", "A", "activa", 5, "desc");
     const d2 = new Dimension("2", "B", "activa", 5, "desc");
 
-    repo.add(d1);
-    repo.add(d2);
+    await repo.add(d1);
+    await repo.add(d2);
 
-    expect(() => repo.update("2", { nombre: "A" }))
+    expect(async () => await repo.update("2", { nombre: "A" }))
       .toThrow("El nombre de la dimensión ya existe");
   });
 
-  test("update nivel tecnológico inválido (<1)", () => {
+  test("update nivel tecnológico inválido (<1)", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
     expect(() => repo.update("1", { nivelTec: 0 }))
       .toThrow("El nivel tecnológico debe estar entre 1 y 10");
   });
 
-  test("update nivel tecnológico inválido (>10)", () => {
+  test("update nivel tecnológico inválido (>10)", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    expect(() => repo.update("1", { nivelTec: 11 }))
+    expect(async () => await repo.update("1", { nivelTec: 11 }))
       .toThrow("El nivel tecnológico debe estar entre 1 y 10");
   });
 
-  test("update descripción vacía", () => {
+  test("update descripción vacía", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
     expect(() => repo.update("1", { descripcion: "" }))
       .toThrow("La descripción no puede estar vacía");
   });
 
-  test("filterByEstado funciona", () => {
+  test("filterByEstado funciona", async () => {
     const d1 = new Dimension("1", "A", "activa", 5, "desc");
     const d2 = new Dimension("2", "B", "destruida", 5, "desc");
 
-    repo.add(d1);
-    repo.add(d2);
+    await repo.add(d1);
+    await repo.add(d2);
 
-    const result = repo.filterByEstado("activa");
+    const result = await repo.filterByEstado("activa");
 
     expect(result.length).toBe(1);
     expect(result[0].id).toBe("1");
   });
 
-  test("isDuplicate true", () => {
+  test("isDuplicate true", async () => {
     const d1 = new Dimension("1", "A", "activa", 5, "desc");
     const d2 = new Dimension("2", "a", "activa", 5, "desc");
 
-    repo.add(d1);
+    await repo.add(d1);
 
     expect(repo.isDuplicate(d2)).toBe(true);
   });
 
-  test("isDuplicate false", () => {
+  test("isDuplicate false", async () => {
     const d1 = new Dimension("1", "A", "activa", 5, "desc");
     const d2 = new Dimension("2", "B", "activa", 5, "desc");
 
-    repo.add(d1);
+    await repo.add(d1);
 
     expect(repo.isDuplicate(d2)).toBe(false);
   });
 
-  test("update sin cambios (no entra en ningún if)", () => {
+  test("update sin cambios (no entra en ningún if)", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    repo.update("1", {});
+    await repo.update("1", {});
 
-    const result = repo.findById("1");
+    const result = await repo.findById("1");
 
     expect(result).toEqual(d);
   }); 
   
-  test("update nombre válido sin duplicado", () => {
+  test("update nombre válido sin duplicado", async () => {
     const d = new Dimension("1", "D1", "activa", 5, "desc");
-    repo.add(d);
+    await repo.add(d);
 
-    repo.update("1", { nombre: "NuevoNombre" });
+    await repo.update("1", { nombre: "NuevoNombre" });
 
-    expect(repo.findById("1")?.nombre).toBe("NuevoNombre");
+    const result = await repo.findById("1")
+    expect(result?.nombre).toBe("NuevoNombre");
   });
   
 });
