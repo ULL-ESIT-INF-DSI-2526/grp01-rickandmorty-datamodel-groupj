@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Invento } from "../src/inventos";
+import { Invento } from "../src/core/models/inventos.js";
 
 describe("Test constructor Invento ", () => {
     test("Deberia crear un invento correctamente", () => {

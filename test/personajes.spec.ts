@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Personaje } from "../src/personajes";
+import { Personaje } from "../src/core/models/personajes.js";
 
 describe("Personaje", () => {
 

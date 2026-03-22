@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioDimensiones } from "../src/RepositorioDimensiones";
-import { Dimension } from "../src/Dimension";
+import { RepositorioDimensiones } from "../src/core/repositories/RepositorioDimensiones.js";
+import { Dimension } from "../src/core/models/Dimension.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 
 let repo: RepositorioDimensiones;

@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioInventos } from "../src/RepositorioInventos";
-import { Invento } from "../src/inventos";
+import { RepositorioInventos } from "../src/core/repositories/RepositorioInventos.js";
+import { Invento } from "../src/core/models/inventos.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 import fs from "fs";
 import path from "path";

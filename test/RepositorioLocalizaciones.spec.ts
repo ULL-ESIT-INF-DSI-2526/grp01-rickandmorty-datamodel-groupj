@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioLocalizaciones } from "../src/RepositorioLocalizaciones";
-import { Localizacion } from "../src/localizaciones";
+import { RepositorioLocalizaciones } from "../src/core/repositories/RepositorioLocalizaciones.js";
+import { Localizacion } from "../src/core/models/localizaciones.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 import fs from "fs";
 import path from "path";

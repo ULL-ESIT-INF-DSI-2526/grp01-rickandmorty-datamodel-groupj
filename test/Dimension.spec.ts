@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach } from "vitest";
-import { Dimension } from "../src/Dimension";
+import { Dimension } from "../src/core/models/Dimension.js";
 
 describe("Tests constructor de clase Dimension", () => {
   let dimension: Dimension;

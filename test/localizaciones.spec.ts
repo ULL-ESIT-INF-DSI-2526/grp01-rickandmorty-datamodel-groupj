@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Localizacion } from "../src/localizaciones";
+import { Localizacion } from "../src/core/models/localizaciones.js";
 
 describe("Localizacion", () => {
 
