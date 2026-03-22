@@ -5,6 +5,7 @@ import { Especie } from "../src/especies";
 import { Personaje } from "../src/personajes";
 import { Localizacion } from "../src/localizaciones";
 import { Invento } from "../src/inventos";
+import { IEventoViaje, IEventoDimension, IEventoInvento } from "../src/interfaces";
 import { Low } from "lowdb";
 import { Data, DefaultData } from "../src/Database/db";
 import { JSONFilePreset } from "lowdb/node";
@@ -23,6 +24,7 @@ beforeEach(async () => {
   db.data.personaje = [];
   db.data.localizacion = [];
   db.data.invento = [];
+  db.data.eventos = [];
   await db.write();
   gestor = new GestorMultiversal(db);
 });
@@ -472,7 +474,6 @@ describe("GestorMultiversal", () => {
     await gestor.addDimension(d);
     await gestor.addEspecie(e);
     
-    // Cambiar origen a uno que SÍ existe (D1)
     await gestor.updateEspecie("E001", { origen: "D-001" });
     
     const updated = await gestor.especiesRepo.findById("E001");
@@ -523,5 +524,599 @@ describe("GestorMultiversal", () => {
     const updated = await gestor.inventosRepo.findById("I1");
     expect(updated?.inventor).toBe("P001");
   });
+
+
+  test("addEventoViaje y getEventos", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+
+    const evento: IEventoViaje = {
+      id: `VIAJE-${Date.now()}`,
+      tipoEvento: "viaje",
+      fecha: new Date().toISOString(),
+      motivo: "Exploracion",
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
+    };
+
+    await gestor.addEventoViaje(evento);
+    const eventos = await gestor.getEventos();
+    expect(eventos.length).toBe(1);
+  });
+
+  test("addEventoDestruccionDimension", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    await gestor.addDimension(d);
+
+    const evento: IEventoDimension = {
+      id: `DEST-${Date.now()}`,
+      tipoEvento: "dimension",
+      fecha: new Date().toISOString(),
+      motivo: "experimento",
+      dimensionId: "D-001",
+      accion: "destruccion"
+    };
+
+    await gestor.addEventoDestruccionDimension(evento);
+    const dimension = await gestor.dimensionesRepo.findById("D-001");
+    expect(dimension?.estadoDim).toBe("destruida");
+  });
+
+  test("addEventoCreacionDimension", async () => {
+    const dimension = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const evento: IEventoDimension = {
+      id: `CREA-${Date.now()}`,
+      tipoEvento: "dimension",
+      fecha: new Date().toISOString(),
+      motivo: "experimento",
+      dimensionId: "D-001",
+      accion: "creacion"
+    };
+
+    await gestor.addEventoCreacionDimension(dimension, evento);
+    const dimensionCreada = await gestor.dimensionesRepo.findById("D-001");
+    expect(dimensionCreada).toBeDefined();
+  });
+
+  test("addEventoInvento", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const l = new Localizacion("L001", "Loc", "Planeta", 10, "D-001", "d");
+    const i = new Invento("I001", "Gun", "P001", "Arma", 5, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addLocalizacion(l);
+    await gestor.addInvento(i);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Prueba",
+      inventoId: "I001",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    await gestor.addEventoInvento(evento);
+    const eventos = await gestor.filterEventosByTipoEvento("invento");
+    expect(eventos.length).toBe(1);
+  });
+
+  test("filterEventosByTipoEvento", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    await gestor.addDimension(d);
+    
+    const evento: IEventoDimension = {
+      id: `DEST-${Date.now()}`,
+      tipoEvento: "dimension",
+      fecha: new Date().toISOString(),
+      motivo: "experimento",
+      dimensionId: "D-001",
+      accion: "destruccion"
+    };
+    
+    await gestor.addEventoDestruccionDimension(evento);
+    
+    const dimensiones = await gestor.filterEventosByTipoEvento("dimension");
+    expect(dimensiones.length).toBe(1);
+  });
+
+  test("getInformeDimensionesActivas", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const d2 = new Dimension("D-002", "Dim2", "activa", 8, "d");
+    const d3 = new Dimension("D-003", "Dim3", "destruida", 3, "d");
+    
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+    await gestor.addDimension(d3);
+    
+    const informe = await gestor.getInformeDimensionesActivas();
+    expect(informe.activas.length).toBe(2);
+    expect(informe.mediaNivelTec).toBe(6.5);
+  });
+
+  test("getInformePersonajesMasVariantes", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+    await gestor.addEspecie(e);
+    
+    const p1 = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const p2 = new Personaje("P002", "Rick", "E001", "D-002", "vivo", "Independiente", 10, "d");
+    const p3 = new Personaje("P003", "Morty", "E001", "D-001", "vivo", "Independiente", 5, "d");
+    
+    await gestor.addPersonaje(p1);
+    await gestor.addPersonaje(p2);
+    await gestor.addPersonaje(p3);
+    
+    const informe = await gestor.getInformePersonajesMasVariantes();
+    expect(informe.maximoVersiones).toBe(2);
+  });
+
+  test("getInformeInventosDesplegados", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const l = new Localizacion("L001", "Loc", "Planeta", 10, "D-001", "d");
+    const i = new Invento("I001", "Gun", "P001", "Arma", 8, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addLocalizacion(l);
+    await gestor.addInvento(i);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I001",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    await gestor.addEventoInvento(evento);
+    
+    const desplegados = await gestor.getInformeInventosDesplegados();
+    expect(desplegados.length).toBe(1);
+    expect(desplegados[0].nivelPeligro).toBe(8);
+  });
+
+  test("getHistorialViajesPorPersonaje", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+
+    const evento: IEventoViaje = {
+      id: `VIAJE-${Date.now()}`,
+      tipoEvento: "viaje",
+      fecha: new Date().toISOString(),
+      motivo: "Viaje",
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
+    };
+
+    await gestor.addEventoViaje(evento);
+
+    const viajes = await gestor.getHistorialViajesPorPersonaje("P001");
+    expect(viajes.length).toBe(1);
+  });
+
+  test("filterEventosByInventoId", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const l = new Localizacion("L001", "Loc", "Planeta", 10, "D-001", "d");
+    const i = new Invento("I001", "Gun", "P001", "Arma", 8, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addLocalizacion(l);
+    await gestor.addInvento(i);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I001",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    await gestor.addEventoInvento(evento);
+    
+    const eventos = await gestor.filterEventosByInventoId("I001");
+    expect(eventos.length).toBe(1);
+  });
+
+  test("getNombrePersonajeById", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    
+    const nombre = await gestor.getNombrePersonajeById("P001");
+    expect(nombre).toBe("Rick");
+    
+    const nombreNoExistente = await gestor.getNombrePersonajeById("NO_EXISTE");
+    expect(nombreNoExistente).toBeUndefined();
+  });
+
+  test("getInformePersonajesMasVariantes sin variantes", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    
+    const informe = await gestor.getInformePersonajesMasVariantes();
+    expect(informe.top.length).toBe(0);
+    expect(informe.maximoVersiones).toBe(0);
+  });
+
+  test("getInformeInventosDesplegados con invento desconocido", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L001", "Loc", "Planeta", 10, "D-001", "d");
+
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I_NO_EXISTE",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    await gestor.eventosRepo.add(evento);
+    
+    const desplegados = await gestor.getInformeInventosDesplegados();
+    expect(desplegados.length).toBe(1);
+    expect(desplegados[0].inventoNombre).toBe("Invento desconocido");
+    expect(desplegados[0].nivelPeligro).toBe(-1);
+  });
+
+test("getHistorialViajesPorPersonaje con multiples viajes para cubrir sort", async () => {
+  const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+  const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+  const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+  const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+
+  await gestor.addDimension(d1);
+  await gestor.addDimension(d2);
+  await gestor.addEspecie(e);
+  await gestor.addPersonaje(p);
+
+  const evento1: IEventoViaje = {
+    id: `VIAJE-1-${Date.now()}`,
+    tipoEvento: "viaje",
+    fecha: new Date("2024-01-01").toISOString(),
+    motivo: "Viaje 1",
+    personajeId: "P001",
+    dimensionOrigenId: "D-001",
+    dimensionDestinoId: "D-002"
+  };
+
+  const evento2: IEventoViaje = {
+    id: `VIAJE-2-${Date.now()}`,
+    tipoEvento: "viaje",
+    fecha: new Date("2024-02-01").toISOString(),
+    motivo: "Viaje 2",
+    personajeId: "P001",
+    dimensionOrigenId: "D-002",
+    dimensionDestinoId: "D-001"
+  };
+
+  await gestor.addEventoViaje(evento1);
+  await gestor.addEventoViaje(evento2);
+
+  const viajes = await gestor.getHistorialViajesPorPersonaje("P001");
+  expect(viajes.length).toBe(2);
+  expect(viajes[0].fecha).toBe(evento1.fecha);
+  expect(viajes[1].fecha).toBe(evento2.fecha);
+});
+
+test("getInformePersonajesMasVariantes con multiples variantes para cubrir sort", async () => {
+  const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+  const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+  const d3 = new Dimension("D-003", "Dim3", "activa", 5, "d");
+  const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+  
+  await gestor.addDimension(d1);
+  await gestor.addDimension(d2);
+  await gestor.addDimension(d3);
+  await gestor.addEspecie(e);
+  
+  const p1 = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+  const p2 = new Personaje("P002", "Rick", "E001", "D-002", "vivo", "Independiente", 10, "d");
+  const p3 = new Personaje("P003", "Morty", "E001", "D-001", "vivo", "Independiente", 5, "d");
+  const p4 = new Personaje("P004", "Morty", "E001", "D-002", "vivo", "Independiente", 5, "d");
+  
+  await gestor.addPersonaje(p1);
+  await gestor.addPersonaje(p2);
+  await gestor.addPersonaje(p3);
+  await gestor.addPersonaje(p4);
+  
+  const informe = await gestor.getInformePersonajesMasVariantes();
+  expect(informe.maximoVersiones).toBe(2);
+  expect(informe.top.length).toBe(2); 
+  expect(informe.top[0].nombreOriginal).toBe("Morty");
+  expect(informe.top[1].nombreOriginal).toBe("Rick");
+});
+
+  test("getInformeInventosDesplegados con multiples inventos para cubrir sort", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const l1 = new Localizacion("L001", "Loc1", "Planeta", 10, "D-001", "d");
+    const l2 = new Localizacion("L002", "Loc2", "Planeta", 10, "D-001", "d");
+    const i1 = new Invento("I001", "Gun", "P001", "Arma", 5, "d");
+    const i2 = new Invento("I002", "Bomb", "P001", "Arma", 9, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addLocalizacion(l1);
+    await gestor.addLocalizacion(l2);
+    await gestor.addInvento(i1);
+    await gestor.addInvento(i2);
+
+    const evento1: IEventoInvento = {
+      id: `INV-1-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue 1",
+      inventoId: "I001",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    const evento2: IEventoInvento = {
+      id: `INV-2-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue 2",
+      inventoId: "I002",
+      localizacionId: "L002",
+      accion: "despliegue"
+    };
+
+    await gestor.addEventoInvento(evento1);
+    await gestor.addEventoInvento(evento2);
+    
+    const desplegados = await gestor.getInformeInventosDesplegados();
+    expect(desplegados.length).toBe(2);
+    expect(desplegados[0].nivelPeligro).toBe(9);
+    expect(desplegados[1].nivelPeligro).toBe(5);
+  });
+
+  test("addEventoViaje error personaje no existe (rama)", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+
+    const evento: IEventoViaje = {
+      id: `VIAJE-${Date.now()}`,
+      tipoEvento: "viaje",
+      fecha: new Date().toISOString(),
+      motivo: "Exploracion",
+      personajeId: "P_NO_EXISTE",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
+    };
+
+    await expect(gestor.addEventoViaje(evento)).rejects.toThrow("El personaje no existe");
+  });
+
+  test("addEventoViaje error dimension origen no existe (rama)", async () => {
+    const d2 = new Dimension("D-002", "Dim2", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-002", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-002", "vivo", "Independiente", 10, "d");
+
+    await gestor.addDimension(d2);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+
+    const evento: IEventoViaje = {
+      id: `VIAJE-${Date.now()}`,
+      tipoEvento: "viaje",
+      fecha: new Date().toISOString(),
+      motivo: "Exploracion",
+      personajeId: "P001",
+      dimensionOrigenId: "D_NO_EXISTE",
+      dimensionDestinoId: "D-002"
+    };
+
+    await expect(gestor.addEventoViaje(evento)).rejects.toThrow("La dimensión de origen no existe");
+  });
+
+  test("addEventoViaje error dimension destino no existe (rama)", async () => {
+    const d1 = new Dimension("D-001", "Dim1", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+
+    await gestor.addDimension(d1);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+
+    const evento: IEventoViaje = {
+      id: `VIAJE-${Date.now()}`,
+      tipoEvento: "viaje",
+      fecha: new Date().toISOString(),
+      motivo: "Exploracion",
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D_NO_EXISTE"
+    };
+
+    await expect(gestor.addEventoViaje(evento)).rejects.toThrow("La dimensión de destino no existe");
+  });
+
+  test("addEventoDestruccionDimension error dimension no existe (rama)", async () => {
+    const evento: IEventoDimension = {
+      id: `DEST-${Date.now()}`,
+      tipoEvento: "dimension",
+      fecha: new Date().toISOString(),
+      motivo: "experimento",
+      dimensionId: "D_NO_EXISTE",
+      accion: "destruccion"
+    };
+
+    await expect(gestor.addEventoDestruccionDimension(evento)).rejects.toThrow("La dimensión no existe");
+  });
+
+  test("addEventoCreacionDimension error dimension ya existe (rama)", async () => {
+    const dimension = new Dimension("D-001", "Dim", "activa", 5, "d");
+    await gestor.addDimension(dimension);
+
+    const evento: IEventoDimension = {
+      id: `CREA-${Date.now()}`,
+      tipoEvento: "dimension",
+      fecha: new Date().toISOString(),
+      motivo: "experimento",
+      dimensionId: "D-001",
+      accion: "creacion"
+    };
+
+    await expect(gestor.addEventoCreacionDimension(dimension, evento)).rejects.toThrow("La dimensión ya existe");
+  });
+
+  test("addEventoInvento error invento no existe (rama)", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L001", "Loc", "Planeta", 10, "D-001", "d");
+
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I_NO_EXISTE",
+      localizacionId: "L001",
+      accion: "despliegue"
+    };
+
+    await expect(gestor.addEventoInvento(evento)).rejects.toThrow("El invento no existe");
+  });
+
+  test("addEventoInvento error localizacion no existe (rama)", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I001", "Gun", "P001", "Arma", 5, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I001",
+      localizacionId: "L_NO_EXISTE",
+      accion: "despliegue"
+    };
+
+    await expect(gestor.addEventoInvento(evento)).rejects.toThrow("La localización no existe");
+  });
+
+
+  test("getInformeInventosDesplegados con localizacion desconocida", async () => {
+    const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+    const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+    const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I001", "Gun", "P001", "Arma", 8, "d");
+
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+
+    const evento: IEventoInvento = {
+      id: `INV-${Date.now()}`,
+      tipoEvento: "invento",
+      fecha: new Date().toISOString(),
+      motivo: "Despliegue",
+      inventoId: "I001",
+      localizacionId: "L_NO_EXISTE",
+      accion: "despliegue"
+    };
+
+    await gestor.eventosRepo.add(evento);
+    
+    const desplegados = await gestor.getInformeInventosDesplegados();
+    expect(desplegados.length).toBe(1);
+    expect(desplegados[0].localizacionNombre).toBe("L_NO_EXISTE");
+  });
+
+test("getInformeInventosDesplegados con localizacion desconocida", async () => {
+  const d = new Dimension("D-001", "Dim", "activa", 5, "d");
+  const e = new Especie("E001", "Humano", "D-001", "humanoide", 80, "d");
+  const p = new Personaje("P001", "Rick", "E001", "D-001", "vivo", "Independiente", 10, "d");
+  const i = new Invento("I001", "Gun", "P001", "Arma", 8, "d");
+
+  await gestor.addDimension(d);
+  await gestor.addEspecie(e);
+  await gestor.addPersonaje(p);
+  await gestor.addInvento(i);
+
+  // Crear evento con localizacion que no existe en la base de datos
+  const evento: IEventoInvento = {
+    id: `INV-${Date.now()}`,
+    tipoEvento: "invento",
+    fecha: new Date().toISOString(),
+    motivo: "Despliegue",
+    inventoId: "I001",
+    localizacionId: "L_NO_EXISTE",
+    accion: "despliegue"
+  };
+
+  // Añadir directamente al repositorio para evitar validación
+  await gestor.eventosRepo.add(evento);
+  
+  const desplegados = await gestor.getInformeInventosDesplegados();
+  expect(desplegados.length).toBe(1);
+  // Verificar que usa el fallback (evento.localizacionId)
+  expect(desplegados[0].localizacionNombre).toBe("L_NO_EXISTE");
+});
 
 });
