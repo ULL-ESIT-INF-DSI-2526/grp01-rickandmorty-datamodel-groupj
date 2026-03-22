@@ -2,6 +2,10 @@ import prompts from "prompts";
 import { GestorMultiversal } from "../gestor.js";
 import { Dimension } from "../Dimension.js";
 
+/**
+ * Funcion que implementa los metodos de registro de dimensiones
+ * @param manager gestor del multiverso
+ */
 export async function mostrarMenuDimenison(
   manager: GestorMultiversal,
 ): Promise<void> {
@@ -40,7 +44,13 @@ export async function mostrarMenuDimenison(
   }
 }
 
+/**
+ * Funcion que permite añadir dimensiones mediante prompts
+ * @param manager el gestor del multiverso
+ * @returns true si se ha creado la dimension de manera correcta
+ */
 async function addDimensionMenu(manager: GestorMultiversal): Promise<boolean> {
+  // Prompts para recopilar los datos del objeto
   const data = await prompts([
     {
       type: "text",
@@ -98,9 +108,16 @@ async function addDimensionMenu(manager: GestorMultiversal): Promise<boolean> {
   }
 }
 
+/**
+ * Funcion que permite eliminar una dimension del multiverso
+ * @param manager el gestor del multiverso
+ * @returns true si se ha eliminado la dimension de manera correcta
+ * @throws Error si no existe el ID que se quiere eliminar
+ */
 async function removeDimensionMenu(
   manager: GestorMultiversal,
 ): Promise<boolean> {
+  // Prompt conseguir el id a eliminar
   const { id } = await prompts({
     type: "text",
     name: "id",
@@ -118,7 +135,13 @@ async function removeDimensionMenu(
   }
 }
 
+/**
+ * Funcion que permite modificar los elementos de una dimension en la base de datos
+ * @param manager 
+ * @throws Error si no se ha podido modificar la dimension o si no existe
+ */
 async function modificarDimensionMenu(manager: GestorMultiversal) {
+  // Prompts para recopilar los datos para modificar
   const data = await prompts([
     {
       type: "text",
