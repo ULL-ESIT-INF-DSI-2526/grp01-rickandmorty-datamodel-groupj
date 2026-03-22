@@ -45,80 +45,82 @@ export class GestorMultiversal {
   }
   //métodos de inserción
 
-  addDimension(dimension: Dimension): void {
-    this.dimensionesRepo.add(dimension);
+  async addDimension(dimension: Dimension): Promise<void> {
+    await this.dimensionesRepo.add(dimension);
   }
 
-  addPersonaje(personaje: Personaje): void {
+  async addPersonaje(personaje: Personaje): Promise<void> {
     if (personaje.dimension === null || personaje.especie === null) 
       throw new Error("El personaje debe tener una dimensión y especie");
 
-    const especie = this.especiesRepo.findById(personaje.especie);
-    const dimension = this.dimensionesRepo.findById(personaje.dimension);
+    const especie = await this.especiesRepo.findById(personaje.especie);
+    const dimension = await this.dimensionesRepo.findById(personaje.dimension);
     if (especie === undefined || dimension === undefined)
       throw new Error("Especie o dimensión inexistentes");
 
-    this.personajesRepo.add(personaje);
+    await this.personajesRepo.add(personaje);
   }
 
-  addEspecie(especie: Especie): void {
+  async addEspecie(especie: Especie): Promise<void> {
     if (especie.origen === null) throw new Error("La especie debe tener un origen");
 
-    const dimension = this.dimensionesRepo.findById(especie.origen);
-    const localizacion = this.localizacionesRepo.findById(especie.origen);
+    const dimension = await this.dimensionesRepo.findById(especie.origen);
+    const localizacion = await this.localizacionesRepo.findById(especie.origen);
     if (dimension === undefined && localizacion === undefined)
       throw new Error("Origen de la especie desconocido");
 
-    this.especiesRepo.add(especie);
+    await this.especiesRepo.add(especie);
   }
 
-  addLocalizacion(localizacion: Localizacion): void {
+  async addLocalizacion(localizacion: Localizacion): Promise<void> {
     if (localizacion.dimension === null) throw new Error("La localización debe tener una dimensión");
 
-    const dimension = this.dimensionesRepo.findById(localizacion.dimension);
+    const dimension = await this.dimensionesRepo.findById(localizacion.dimension);
     if (dimension === undefined) throw new Error("Origen de la localización desconocida");
 
-    this.localizacionesRepo.add(localizacion);
+    await this.localizacionesRepo.add(localizacion);
   }
 
-  addInvento(invento: Invento): void {
+  async addInvento(invento: Invento): Promise<void> {
     if (invento.inventor === null) throw new Error("El invento debe tener un inventor");
 
-    const inventor = this.personajesRepo.findById(invento.inventor);
+    const inventor = await this.personajesRepo.findById(invento.inventor);
     if (inventor === undefined) throw new Error("Inventor desconocido");
 
-    this.inventosRepo.add(invento);
+    await this.inventosRepo.add(invento);
   }
 
   //métodos de eliminación
 
-  removeDimension(id: string): void {
-    this.dimensionesRepo.remove(id);
+  async removeDimension(id: string): Promise<void> {
+    await this.dimensionesRepo.remove(id);
 
-    const aux = this.localizacionesRepo.filterByDimension(id);
-    aux.then(a => a.forEach((objeto) => {this.removeLocalizacion(objeto.id)}));
+    const aux = await this.localizacionesRepo.filterByDimension(id);
+    for (const objeto of aux) {
+      await this.removeLocalizacion(objeto.id);
+    }
 
-    this.personajesRepo.setNullDimension(id);
-    this.especiesRepo.setNullOrigen(id);
+    await this.personajesRepo.setNullDimension(id);
+    await this.especiesRepo.setNullOrigen(id);
   }
 
-  removePersonaje(id: string): void {
-    this.personajesRepo.remove(id);
-    this.inventosRepo.setNullInventor(id);
+  async removePersonaje(id: string): Promise<void> {
+    await this.personajesRepo.remove(id);
+    await this.inventosRepo.setNullInventor(id);
   }
 
-  removeEspecie(id: string): void {
-    this.especiesRepo.remove(id);
-    this.personajesRepo.setNullEspecie(id);
+  async removeEspecie(id: string): Promise<void> {
+    await this.especiesRepo.remove(id);
+    await this.personajesRepo.setNullEspecie(id);
   }
 
-  removeLocalizacion(id: string): void {
-    this.localizacionesRepo.remove(id);
-    this.especiesRepo.setNullOrigen(id);
+  async removeLocalizacion(id: string): Promise<void> {
+    await this.localizacionesRepo.remove(id);
+    await this.especiesRepo.setNullOrigen(id);
   }
 
-  removeInvento(id: string): void {
-    this.inventosRepo.remove(id);
+  async removeInvento(id: string): Promise<void> {
+    await this.inventosRepo.remove(id);
   }
 
   //métodos de modificación
@@ -128,46 +130,56 @@ export class GestorMultiversal {
     await this.dimensionesRepo.update(id, cambios);
   }
 
-  updatePersonaje(id: string, cambios: { nombre?: string; especie?: string | null; dimension?: string | null;
+  async updatePersonaje(id: string, cambios: { nombre?: string; especie?: string | null; dimension?: string | null;
                                          estado?: estadosPersonaje; afiliacion?: tipoAfiliacion; 
-                                         nivelInteligencia?: number; descripcion?: string }): void{
+                                         nivelInteligencia?: number; descripcion?: string }): Promise<void> {
 
-    if (cambios.especie !== undefined && cambios.especie !== null)
-      if (!this.especiesRepo.findById(cambios.especie)) throw new Error("La especie no existe");
+    if (cambios.especie !== undefined && cambios.especie !== null) {
+      const especie = await this.especiesRepo.findById(cambios.especie);
+      if (!especie) throw new Error("La especie no existe");
+    }
 
-    if (cambios.dimension !== undefined && cambios.dimension !== null)
-      if (!this.dimensionesRepo.findById(cambios.dimension)) throw new Error("La dimensión no existe");
+    if (cambios.dimension !== undefined && cambios.dimension !== null) {
+      const dimension = await this.dimensionesRepo.findById(cambios.dimension);
+      if (!dimension) throw new Error("La dimensión no existe");
+    }
 
-    this.personajesRepo.update(id, cambios);
+    await this.personajesRepo.update(id, cambios);
   }
 
-  updateEspecie(id: string, cambios: { nombre?: string; origen?: string | null; tipo?: tiposEspecie; 
-                                       esperanzaVida?: number; descripcion?: string }): void {
+  async updateEspecie(id: string, cambios: { nombre?: string; origen?: string | null; tipo?: tiposEspecie; 
+                                       esperanzaVida?: number; descripcion?: string }): Promise<void> {
     
     if (cambios.origen !== undefined && cambios.origen !== null) { 
-      if (!this.dimensionesRepo.findById(cambios.origen) && !this.localizacionesRepo.findById(cambios.origen))
+      const dimension = await this.dimensionesRepo.findById(cambios.origen);
+      const localizacion = await this.localizacionesRepo.findById(cambios.origen);
+      if (!dimension && !localizacion)
         throw new Error("Origen de la especie desconocido"); 
     }
 
-    this.especiesRepo.update(id, cambios);
+    await this.especiesRepo.update(id, cambios);
   }
 
-  updateLocalizacion(id: string, cambios: { nombre?: string; tipo?: tipoLocalizacion; poblacionAproximada?: number; 
-                                dimension?: string | null; descripcion?: string }): void {
+  async updateLocalizacion(id: string, cambios: { nombre?: string; tipo?: tipoLocalizacion; poblacionAproximada?: number; 
+                                dimension?: string | null; descripcion?: string }): Promise<void> {
 
-    if (cambios.dimension !== undefined && cambios.dimension !== null)
-      if (!this.dimensionesRepo.findById(cambios.dimension)) throw new Error("Origen de la localización desconocida");
+    if (cambios.dimension !== undefined && cambios.dimension !== null) {
+      const dimension = await this.dimensionesRepo.findById(cambios.dimension);
+      if (!dimension) throw new Error("Origen de la localización desconocida");
+    }
 
-    this.localizacionesRepo.update(id, cambios);
+    await this.localizacionesRepo.update(id, cambios);
   }
 
-  updateInvento(id: string, cambios: { nombre?: string; inventor?: string | null; tipo?: tiposInvento; 
-                                nivelPeligro?: number; descripcion?: string }): void {
+  async updateInvento(id: string, cambios: { nombre?: string; inventor?: string | null; tipo?: tiposInvento; 
+                                nivelPeligro?: number; descripcion?: string }): Promise<void> {
     
-    if (cambios.inventor !== undefined && cambios.inventor !== null)
-      if (!this.personajesRepo.findById(cambios.inventor)) throw new Error("Inventor desconocido");
+    if (cambios.inventor !== undefined && cambios.inventor !== null) {
+      const inventor = await this.personajesRepo.findById(cambios.inventor);
+      if (!inventor) throw new Error("Inventor desconocido");
+    }
 
-  this.inventosRepo.update(id, cambios);
+    await this.inventosRepo.update(id, cambios);
   }
 
   //métodos para filtrar
@@ -257,13 +269,13 @@ export class GestorMultiversal {
   //método para las variantes
 
   async getVariantesPersonaje(nombre: string): Promise<Personaje[]> {
-  const personajes = await this.personajesRepo.getAll();
+    const personajes = await this.personajesRepo.getAll();
 
-  return personajes.filter(p =>
-    p.nombre &&
-    normalize(p.nombre) === normalize(nombre)
-  );
-}
+    return personajes.filter(p =>
+      p.nombre &&
+      normalize(p.nombre) === normalize(nombre)
+    );
+  }
 
   //métodos de control del estado global del multiverso
 
@@ -274,9 +286,10 @@ export class GestorMultiversal {
   async getPersonajesDimDestruida(): Promise<Personaje[]> {
     const dimension = await this.getDimensionesDestruidas();
     const idsDestruidas = dimension.map(d => d.id);
-    return this.personajesRepo.getAll().then(r => r.filter(p =>
+    const personajes = await this.personajesRepo.getAll();
+    return personajes.filter(p =>
       p.dimension !== null && idsDestruidas.includes(p.dimension)
-    ));
+    );
   }
 
   async getPersonajesDimEliminada(): Promise<Personaje[]> {
