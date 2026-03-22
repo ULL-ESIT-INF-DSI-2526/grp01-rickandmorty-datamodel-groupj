@@ -48,6 +48,7 @@ export async function mostrarMenuConsultas(
         { title: "Consultar personajes", value: "personajes" },
         { title: "Consultar localizaciones", value: "localizaciones" },
         { title: "Consultar inventos", value: "inventos" },
+        { title: "Consultar eventos", value: "eventos" },
         { title: "Variantes de personaje", value: "variantes" },
         { title: "Informes del multiverso", value: "informes" },
         { title: "Volver", value: "volver" },
@@ -64,6 +65,9 @@ export async function mostrarMenuConsultas(
       case "inventos":
         await consultasInventos(gestor);
         break;
+      case "eventos":
+        await consultasEventos(gestor);
+        break;
       case "variantes": {
         const input = await prompts({
           type: "text",
@@ -79,6 +83,66 @@ export async function mostrarMenuConsultas(
       case "informes":
         await menuInformes(gestor);
         break;
+      case "volver":
+        salir = true;
+        break;
+    }
+  }
+}
+
+/**
+ * Funcion que guarda las opciones del menu de eventos.
+ * @param gestor - gestor del multiverso
+ */
+async function consultasEventos(gestor: GestorMultiversal): Promise<void> {
+  const eventosRepo = new RepositorioEventos(db);
+  let salir = false;
+
+  while (!salir) {
+    const respuesta = await prompts({
+      type: "select",
+      name: "consultaEvento",
+      message: "Consulta de eventos",
+      choices: [
+        { title: "Historial de viajes por personaje", value: "historial-viajes" },
+        { title: "Eventos por tipo", value: "tipo" },
+        { title: "Eventos de invento por ID", value: "invento-id" },
+        { title: "Volver", value: "volver" },
+      ],
+    });
+
+    switch (respuesta.consultaEvento) {
+      case "historial-viajes":
+        await informeHistorialViajes(gestor);
+        break;
+      case "tipo": {
+        const { tipo } = await prompts({
+          type: "select",
+          name: "tipo",
+          message: "Tipo de evento:",
+          choices: [
+            { title: "Viaje", value: "viaje" },
+            { title: "Dimension", value: "dimension" },
+            { title: "Invento", value: "invento" },
+          ],
+        });
+
+        const eventosTipo = await eventosRepo.filterByTipoEvento(tipo);
+        console.log(eventosTipo);
+        break;
+      }
+      case "invento-id": {
+        const { inventoId } = await prompts({
+          type: "text",
+          name: "inventoId",
+          message: "ID del invento:",
+          validate: (valor) => (valor.length > 0 ? true : "Debe tener un ID"),
+        });
+
+        const eventosInvento = await eventosRepo.filterByInventoId(inventoId);
+        console.log(eventosInvento);
+        break;
+      }
       case "volver":
         salir = true;
         break;
