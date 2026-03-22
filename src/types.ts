@@ -15,3 +15,12 @@ export type tipoAfiliacion = "Federacion Galactica" | "Consejo de Ricks" | "Fami
 
 /** Valores posibles para el tipo de localizacion */
 export type tipoLocalizacion = "Planeta" | "Estacion espacial" | "Dimension de bolsillo" | "Simulacion virtual";  
+
+/** Tipos de eventos del multiverso */
+export type tipoEventoMultiversal = "viaje" | "dimension" | "invento";
+
+/** Acciones posibles sobre dimensiones dentro de un evento */
+export type accionEventoDimension = "creacion" | "destruccion";
+
+/** Acciones posibles sobre inventos dentro de un evento */
+export type accionEventoInvento = "despliegue" | "neutralizacion";
