@@ -98,7 +98,7 @@ export class RepositorioInventos implements IDuplicable<Invento> {
 
   async filterByInventor(inventor: string): Promise<Invento[]> {
     this._db.read();
-    return this._db.data.invento.filter(i => i.inventor === inventor);
+    return this._db.data.invento.filter(i => i.inventor !== null && i.inventor === inventor);
   }
 
   async filterByPeligrosidad(peligro: number): Promise<Invento[]> {
