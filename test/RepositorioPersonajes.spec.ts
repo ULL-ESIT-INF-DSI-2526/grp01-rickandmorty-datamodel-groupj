@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioPersonajes } from "../src/RepositorioPersonajes";
-import { Personaje } from "../src/personajes";
+import { RepositorioPersonajes } from "../src/core/repositories/RepositorioPersonajes.js";
+import { Personaje } from "../src/core/models/personajes.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 import fs from "fs";
 import path from "path";

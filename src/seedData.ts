@@ -8,13 +8,13 @@
  * - 15 inventos
  */
 
-import { GestorMultiversal } from "./gestor.js";
-import { Dimension } from "./Dimension.js";
-import { Personaje } from "./personajes.js";
-import { Especie } from "./especies.js";
-import { Localizacion } from "./localizaciones.js";
-import { Invento } from "./inventos.js";
-import { db } from "./Database/db.js";
+import { GestorMultiversal } from "./core/gestor.js";
+import { Dimension } from "./core/models/Dimension.js";
+import { Personaje } from "./core/models/personajes.js";
+import { Especie } from "./core/models/especies.js";
+import { Localizacion } from "./core/models/localizaciones.js";
+import { Invento } from "./core/models/inventos.js";
+import { db } from "./database/db.js";
 
 async function seedDatabase(): Promise<void> {
   await db.read();

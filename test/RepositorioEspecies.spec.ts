@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioEspecies } from "../src/RepositorioEspecies";
-import { Especie } from "../src/especies";
+import { RepositorioEspecies } from "../src/core/repositories/RepositorioEspecies.js";
+import { Especie } from "../src/core/models/especies.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 import fs from "fs";
 import path from "path";
