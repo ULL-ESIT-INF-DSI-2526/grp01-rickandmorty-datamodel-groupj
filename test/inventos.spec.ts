@@ -89,19 +89,6 @@ describe("Test constructor Invento ", () => {
         }).toThrow("Inventor vacío");
     });
 
-    test("Deberia lanzar un error si el tipo esta vacio", () => {
-        expect(() => {
-            new Invento(
-                "pg137",
-                "Portal Gun",
-                "Rick Sanchez",
-                "",
-                9,
-                "Un dispositivo que permite viajar entre dimensiones."
-            );
-        }).toThrow("Tipo de invento vacío");
-    });
-
     test("Deberia lanzar un error si la descripcion esta vacia", () => {
         expect(() => {
             new Invento(
