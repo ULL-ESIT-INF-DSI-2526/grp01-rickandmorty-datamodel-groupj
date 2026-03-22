@@ -173,8 +173,8 @@ export async function searchEstadoPersonaje(
       message: "Estado:",
       choices: [
         { title: "Vivo", value: "vivo" },
-        { title: "Muerto", value: "vivo" },
-        { title: "Desconocido", value: "vivo" },
+        { title: "Muerto", value: "muerto" },
+        { title: "Desconocido", value: "desconocido" },
         { title: "Robot sustituto", value: "robot sustituto" },
         { title: "Clon", value: "clon" },
       ],
