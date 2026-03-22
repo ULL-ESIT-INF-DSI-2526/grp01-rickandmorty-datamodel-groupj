@@ -1,39 +1,54 @@
-import { describe, expect, test, beforeEach } from "vitest";
+import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import { RepositorioLocalizaciones } from "../src/RepositorioLocalizaciones";
 import { Localizacion } from "../src/localizaciones";
+import { Low } from "lowdb";
+import { Data, DefaultData } from "../src/Database/db";
+import { JSONFilePreset } from "lowdb/node";
+import fs from "fs";
+import path from "path";
 
 let repo: RepositorioLocalizaciones;
+let db: Low<Data>;
+let testDbPath: string;
 
-const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+beforeEach(async () => {
+  testDbPath = path.join(__dirname, `testDb_localizaciones_${Date.now()}.json`);
+  db = await JSONFilePreset(testDbPath, DefaultData);
+  db.data.localizacion = [];
+  await db.write();
+  repo = new RepositorioLocalizaciones(db);
+});
 
-beforeEach(() => {
-  repo = new RepositorioLocalizaciones(normalize);
+afterEach(() => {
+  if (fs.existsSync(testDbPath)) {
+    fs.unlinkSync(testDbPath);
+  }
 });
 
 describe("RepositorioLocalizaciones", () => {
 
-  test("add correcto", () => {
+  test("add correcto", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
-
-    expect(repo.getAll().length).toBe(1);
+    await repo.add(l);
+    const all = await repo.getAll();
+    expect(all.length).toBe(1);
+    await repo.remove("1");
   });
 
-  test("add duplicado", () => {
+  test("add duplicado", async () => {
     const l1 = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
     const l2 = new Localizacion("2", "tierra", "Planeta", 2000, "D1", "desc");
 
-    repo.add(l1);
-
-    expect(() => repo.add(l2)).toThrow("Localizacion duplicada");
+    await repo.add(l1);
+    await expect(repo.add(l2)).rejects.toThrow("Localizacion duplicada");
+    await repo.remove("1");
   });
 
-  test("update correcto", () => {
+  test("update correcto", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    repo.update("1", {
+    await repo.update("1", {
       nombre: "Marte",
       tipo: "Planeta",
       poblacionAproximada: 500,
@@ -41,118 +56,140 @@ describe("RepositorioLocalizaciones", () => {
       descripcion: "nuevo"
     });
 
-    const updated = repo.findById("1");
+    const updated = await repo.findById("1");
 
     expect(updated?.nombre).toBe("Marte");
     expect(updated?.dimension).toBe("D2");
     expect(updated?.poblacionAproximada).toBe(500);
     expect(updated?.descripcion).toBe("nuevo");
+    await repo.remove("1");
   });
 
-  test("update no existe", () => {
-    expect(() => repo.update("X", {}))
-      .toThrow("La localización no existe");
+  test("update no existe", async () => {
+    await expect(repo.update("X", {})).rejects.toThrow("La localización no existe");
   });
 
-  test("update nombre vacío", () => {
+  test("update nombre vacío", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    expect(() => repo.update("1", { nombre: "" }))
-      .toThrow("El nombre no puede estar vacío");
+    await expect(repo.update("1", { nombre: "" })).rejects.toThrow("El nombre no puede estar vacío");
+    await repo.remove("1");
   });
 
-  test("update dimension null", () => {
+  test("update dimension null", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    expect(() => repo.update("1", { dimension: null }))
-      .toThrow("La localización debe tener una dimensión");
+    await expect(repo.update("1", { dimension: null })).rejects.toThrow("La localización debe tener una dimensión");
+    await repo.remove("1");
   });
 
-  test("update poblacion negativa", () => {
+  test("update poblacion negativa", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    expect(() => repo.update("1", { poblacionAproximada: -1 }))
-      .toThrow("La población no puede ser negativa");
+    await expect(repo.update("1", { poblacionAproximada: -1 })).rejects.toThrow("La población no puede ser negativa");
+    await repo.remove("1");
   });
 
-  test("update descripción vacía", () => {
+  test("update descripción vacía", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    expect(() => repo.update("1", { descripcion: "" }))
-      .toThrow("La descripción no puede estar vacía");
+    await expect(repo.update("1", { descripcion: "" })).rejects.toThrow("La descripción no puede estar vacía");
+    await repo.remove("1");
   });
 
-  test("update duplicado", () => {
+  test("update duplicado", async () => {
     const l1 = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
     const l2 = new Localizacion("2", "Marte", "Planeta", 500, "D2", "desc");
 
-    repo.add(l1);
-    repo.add(l2);
+    await repo.add(l1);
+    await repo.add(l2);
 
-    expect(() => repo.update("2", {
+    await expect(repo.update("2", {
       nombre: "Tierra",
       dimension: "D1"
-    })).toThrow("Localización duplicada");
+    })).rejects.toThrow("Localización duplicada");
+    await repo.remove("1");
+    await repo.remove("2");
   });
 
-  test("update sin cambios", () => {
+  test("update sin cambios", async () => {
     const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
-    repo.add(l);
+    await repo.add(l);
 
-    repo.update("1", {});
+    await repo.update("1", {});
 
-    expect(repo.findById("1")).toEqual(l);
+    const result = await repo.findById("1");
+    expect(result).toEqual(l);
+    await repo.remove("1");
   });
 
-  // -------- FILTERS --------
+  test("filterByNombre", async () => {
+    const l1 = new Localizacion("1", "A", "Planeta", 1, "D1", "d");
+    const l2 = new Localizacion("2", "B", "Planeta", 1, "D1", "d");
+    await repo.add(l1);
+    await repo.add(l2);
 
-  test("filterByNombre", () => {
-    repo.add(new Localizacion("1", "A", "Planeta", 1, "D1", "d"));
-    repo.add(new Localizacion("2", "B", "Planeta", 1, "D1", "d"));
-
-    const result = repo.filterByNombre("A");
+    const result = await repo.filterByNombre("A");
 
     expect(result.length).toBe(1);
+    await repo.remove("1");
+    await repo.remove("2");
   });
 
-  test("filterByTipo", () => {
-    repo.add(new Localizacion("1", "A", "Planeta", 1, "D1", "d"));
-    repo.add(new Localizacion("2", "B", "Estacion espacial", 1, "D1", "d"));
+  test("filterByTipo", async () => {
+    const l1 = new Localizacion("1", "A", "Planeta", 1, "D1", "d");
+    const l2 = new Localizacion("2", "B", "Estacion espacial", 1, "D1", "d");
+    await repo.add(l1);
+    await repo.add(l2);
 
-    const result = repo.filterByTipo("Planeta");
+    const result = await repo.filterByTipo("Planeta");
 
     expect(result.length).toBe(1);
+    await repo.remove("1");
+    await repo.remove("2");
   });
 
-  test("filterByDimension", () => {
-    repo.add(new Localizacion("1", "A", "Planeta", 1, "D1", "d"));
-    repo.add(new Localizacion("2", "B", "Planeta", 1, "D2", "d"));
+  test("filterByDimension", async () => {
+    const l1 = new Localizacion("1", "A", "Planeta", 1, "D1", "d");
+    const l2 = new Localizacion("2", "B", "Planeta", 1, "D2", "d");
+    await repo.add(l1);
+    await repo.add(l2);
 
-    const result = repo.filterByDimension("D1");
+    const result = await repo.filterByDimension("D1");
 
     expect(result.length).toBe(1);
+    await repo.remove("1");
+    await repo.remove("2");
   });
 
-  test("isDuplicate true", () => {
+  test("isDuplicate true", async () => {
     const l1 = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
     const l2 = new Localizacion("2", "tierra", "Planeta", 2000, "D1", "desc");
 
-    repo.add(l1);
+    await repo.add(l1);
 
-    expect(repo.isDuplicate(l2)).toBe(true);
+    const result = await repo.isDuplicate(l2);
+    expect(result).toBe(true);
+    await repo.remove("1");
   });
 
-  test("isDuplicate false", () => {
+  test("isDuplicate false", async () => {
     const l1 = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
     const l2 = new Localizacion("2", "Marte", "Planeta", 2000, "D2", "desc");
 
-    repo.add(l1);
+    await repo.add(l1);
 
-    expect(repo.isDuplicate(l2)).toBe(false);
+    const result = await repo.isDuplicate(l2);
+    expect(result).toBe(false);
+    await repo.remove("1");
+  });
+
+  test("remove lanza error si el elemento no existe", async () => {
+    await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
 
 });
