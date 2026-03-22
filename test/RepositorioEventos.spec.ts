@@ -1,8 +1,8 @@
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { RepositorioEventos } from "../src/RepositorioEventos";
-import { EventoMultiversal } from "../src/interfaces";
+import { RepositorioEventos } from "../src/core/repositories/RepositorioEventos.js";
+import { EventoMultiversal } from "../src/core/interfaces.js";
 import { Low } from "lowdb";
-import { Data, DefaultData } from "../src/Database/db";
+import { Data, DefaultData } from "../src/database/db.js";
 import { JSONFilePreset } from "lowdb/node";
 import fs from "fs";
 import path from "path";
