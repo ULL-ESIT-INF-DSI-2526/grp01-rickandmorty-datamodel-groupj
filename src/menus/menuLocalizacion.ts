@@ -25,6 +25,7 @@ export async function mostrarMenuLocalizacion(
         { title: "Modificar", value: "modificar" },
         { title: "Eliminar", value: "eliminar" },
         { title: "Mostrar todo", value: "mostrar" },
+        { title: "Consultar", value: "consultar" },
         { title: "Volver", value: "volver" },
       ],
     });
@@ -43,9 +44,82 @@ export async function mostrarMenuLocalizacion(
         console.log(localizaciones);
         break;
       }
+      case "consultar":
+        await consultasLocalizacion(manager);
+        break;
       case "volver":
         volver = true;
         break;
+    }
+  }
+}
+
+/**
+ * Funcion que permite consultar localizaciones por diferentes criterios.
+ * @param manager - gestor del multiverso
+ */
+async function consultasLocalizacion(manager: GestorMultiversal): Promise<void> {
+  let salir = false;
+  while (!salir) {
+    const respuesta = await prompts({
+      type: "select",
+      name: "consulta",
+      message: "Consultar localizaciones por:",
+      choices: [
+        { title: "Nombre", value: "nombre" },
+        { title: "Tipo", value: "tipo" },
+        { title: "Dimension de origen", value: "dimension" },
+        { title: "Volver", value: "volver" },
+      ],
+    });
+
+    let resultados: Localizacion[] = [];
+
+    switch (respuesta.consulta) {
+      case "nombre": {
+        const { nombre } = await prompts({
+          type: "text",
+          name: "nombre",
+          message: "Nombre de la localizacion:",
+          validate: (valor) => valor.length > 0 || "Debe tener un nombre",
+        });
+        resultados = await manager.filterLocalizacionesByNombre(nombre);
+        break;
+      }
+      case "tipo": {
+        const { tipo } = await prompts({
+          type: "select",
+          name: "tipo",
+          message: "Tipo de localizacion:",
+          choices: [
+            { title: "Planeta", value: "Planeta" },
+            { title: "Estacion espacial", value: "Estacion espacial" },
+            { title: "Dimension de bolsillo", value: "Dimension de bolsillo" },
+            { title: "Simulacion virtual", value: "Simulacion virtual" },
+          ],
+        });
+        resultados = await manager.filterLocalizacionesByTipo(tipo);
+        break;
+      }
+      case "dimension": {
+        const { dimension } = await prompts({
+          type: "text",
+          name: "dimension",
+          message: "ID de la dimension de origen:",
+          validate: (valor) => valor.length > 0 || "Debe tener un ID",
+        });
+        resultados = await manager.filterLocalizacionesByDimension(dimension);
+        break;
+      }
+      case "volver":
+        salir = true;
+        continue;
+    }
+
+    if (resultados.length > 0) {
+      console.log(resultados);
+    } else {
+      console.log("No se encontraron localizaciones.");
     }
   }
 }

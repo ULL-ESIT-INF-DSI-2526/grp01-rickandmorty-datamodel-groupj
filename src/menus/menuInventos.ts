@@ -25,6 +25,7 @@ export async function mostrarMenuInvento(
         { title: "Modificar", value: "modificar" },
         { title: "Eliminar", value: "eliminar" },
         { title: "Mostrar todo", value: "mostrar" },
+        { title: "Consultar", value: "consultar" },
         { title: "Volver", value: "volver" },
       ],
     });
@@ -43,9 +44,96 @@ export async function mostrarMenuInvento(
         console.log(inventos);
         break;
       }
+      case "consultar":
+        await consultasInvento(manager);
+        break;
       case "volver":
         volver = true;
         break;
+    }
+  }
+}
+
+/**
+ * Funcion que permite consultar inventos por diferentes criterios.
+ * @param manager - gestor del multiverso
+ */
+async function consultasInvento(manager: GestorMultiversal): Promise<void> {
+  let salir = false;
+  while (!salir) {
+    const respuesta = await prompts({
+      type: "select",
+      name: "consulta",
+      message: "Consultar inventos por:",
+      choices: [
+        { title: "Nombre", value: "nombre" },
+        { title: "Tipo", value: "tipo" },
+        { title: "Inventor", value: "inventor" },
+        { title: "Nivel de peligrosidad", value: "nivel" },
+        { title: "Volver", value: "volver" },
+      ],
+    });
+
+    let resultados: Invento[] = [];
+
+    switch (respuesta.consulta) {
+      case "nombre": {
+        const { nombre } = await prompts({
+          type: "text",
+          name: "nombre",
+          message: "Nombre del invento:",
+          validate: (valor) => valor.length > 0 || "Debe tener un nombre",
+        });
+        resultados = await manager.filterInventosByNombre(nombre);
+        break;
+      }
+      case "tipo": {
+        const { tipo } = await prompts({
+          type: "select",
+          name: "tipo",
+          message: "Tipo de invento:",
+          choices: [
+            { title: "Arma", value: "Arma" },
+            { title: "Dispositivo de viaje", value: "Dispositivo de viaje" },
+            { title: "Biotecnologia", value: "Biotecnologia" },
+            { title: "Objeto cotidiano absurdo", value: "Objeto cotidiano absurdo" },
+          ],
+        });
+        resultados = await manager.filterInventosByTipo(tipo);
+        break;
+      }
+      case "inventor": {
+        const { inventor } = await prompts({
+          type: "text",
+          name: "inventor",
+          message: "ID del inventor:",
+          validate: (valor) => valor.length > 0 || "Debe tener un ID",
+        });
+        resultados = await manager.filterInventosByInventor(inventor);
+        break;
+      }
+      case "nivel": {
+        const { nivel } = await prompts({
+          type: "text",
+          name: "nivel",
+          message: "Nivel de peligrosidad (1-10):",
+          validate: (valor) => {
+            const num = Number(valor);
+            return (num >= 1 && num <= 10) ? true : "Debe ser entre 1 y 10";
+          },
+        });
+        resultados = await manager.filterInventosByPeligrosidad(Number(nivel));
+        break;
+      }
+      case "volver":
+        salir = true;
+        continue;
+    }
+
+    if (resultados.length > 0) {
+      console.log(resultados);
+    } else {
+      console.log("No se encontraron inventos.");
     }
   }
 }

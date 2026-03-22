@@ -25,6 +25,7 @@ export async function mostrarMenuPersonaje(
         { title: "Modificar", value: "modificar" },
         { title: "Eliminar", value: "eliminar" },
         { title: "Mostrar todo", value: "mostrar" },
+        { title: "Consultar", value: "consultar" },
         { title: "Volver", value: "volver" },
       ],
     });
@@ -44,10 +45,166 @@ export async function mostrarMenuPersonaje(
         console.log(personaje);
         break;
       }
+      case "consultar":
+        await consultasPersonaje(manager);
+        break;
       case "volver":
         volver = true;
         break;
     }
+  }
+}
+
+/**
+ * Funcion que permite consultar personajes por diferentes criterios.
+ * @param manager - gestor del multiverso
+ */
+async function consultasPersonaje(manager: GestorMultiversal): Promise<void> {
+  let salir = false;
+  while (!salir) {
+    const respuesta = await prompts({
+      type: "select",
+      name: "consulta",
+      message: "Consultar personajes por:",
+      choices: [
+        { title: "Nombre", value: "nombre" },
+        { title: "Especie", value: "especie" },
+        { title: "Afiliacion", value: "afiliacion" },
+        { title: "Estado", value: "estado" },
+        { title: "Dimension de origen", value: "dimension" },
+        { title: "Variantes de un personaje", value: "variantes" },
+        { title: "Volver", value: "volver" },
+      ],
+    });
+
+    let resultados: Personaje[] = [];
+
+    switch (respuesta.consulta) {
+      case "nombre": {
+        const { nombre } = await prompts({
+          type: "text",
+          name: "nombre",
+          message: "Nombre del personaje:",
+          validate: (valor) => valor.length > 0 || "Debe tener un nombre",
+        });
+        resultados = await manager.filterPersonajesByNombre(nombre);
+        break;
+      }
+      case "especie": {
+        const { especie } = await prompts({
+          type: "text",
+          name: "especie",
+          message: "ID de la especie:",
+          validate: (valor) => valor.length > 0 || "Debe tener un ID",
+        });
+        resultados = await manager.filterPersonajesByEspecie(especie);
+        break;
+      }
+      case "afiliacion": {
+        const { afiliacion } = await prompts({
+          type: "select",
+          name: "afiliacion",
+          message: "Afiliacion:",
+          choices: [
+            { title: "Federacion Galactica", value: "Federacion Galactica" },
+            { title: "Consejo de Ricks", value: "Consejo de Ricks" },
+            { title: "Familia Smith", value: "Familia Smith" },
+            { title: "Independiente", value: "Independiente" },
+          ],
+        });
+        resultados = await manager.filterPersonajesByAfiliacion(afiliacion);
+        break;
+      }
+      case "estado": {
+        const { estado } = await prompts({
+          type: "select",
+          name: "estado",
+          message: "Estado:",
+          choices: [
+            { title: "Vivo", value: "vivo" },
+            { title: "Muerto", value: "muerto" },
+            { title: "Desconocido", value: "desconocido" },
+            { title: "Robot sustituto", value: "robot sustituto" },
+            { title: "Clon", value: "clon" },
+          ],
+        });
+        resultados = await manager.filterPersonajesByEstado(estado);
+        break;
+      }
+      case "dimension": {
+        const { dimension } = await prompts({
+          type: "text",
+          name: "dimension",
+          message: "ID de la dimension de origen:",
+          validate: (valor) => valor.length > 0 || "Debe tener un ID",
+        });
+        resultados = await manager.filterPersonajesByDimension(dimension);
+        break;
+      }
+      case "variantes": {
+        const { nombre } = await prompts({
+          type: "text",
+          name: "nombre",
+          message: "Nombre del personaje para buscar sus variantes:",
+          validate: (valor) => valor.length > 0 || "Debe tener un nombre",
+        });
+        resultados = await manager.getVariantesPersonaje(nombre);
+        if (resultados.length > 0) {
+          console.log(`\nVariantes de "${nombre}":`);
+        }
+        break;
+      }
+      case "volver":
+        salir = true;
+        continue;
+    }
+
+    if (resultados.length === 0) {
+      console.log("No se encontraron personajes.");
+      continue;
+    }
+
+    // Preguntar si quiere ordenar los resultados
+    const { ordenar } = await prompts({
+      type: "select",
+      name: "ordenar",
+      message: "¿Desea ordenar los resultados?",
+      choices: [
+        { title: "No", value: false },
+        { title: "Si", value: true },
+      ],
+    });
+
+    if (ordenar) {
+      const { criterio, orden } = await prompts([
+        {
+          type: "select",
+          name: "criterio",
+          message: "Ordenar por:",
+          choices: [
+            { title: "Nombre", value: "nombre" },
+            { title: "Nivel de inteligencia", value: "inteligencia" },
+          ],
+        },
+        {
+          type: "select",
+          name: "orden",
+          message: "Orden:",
+          choices: [
+            { title: "Ascendente", value: true },
+            { title: "Descendente", value: false },
+          ],
+        },
+      ]);
+
+      if (criterio === "nombre") {
+        resultados = manager.orderPersonajesByNombre(resultados, orden);
+      } else {
+        resultados = manager.orderPersonajesByInteligencia(resultados, orden);
+      }
+    }
+
+    console.log(resultados);
   }
 }
 
