@@ -61,8 +61,8 @@ async function addDimensionMenu(manager: GestorMultiversal): Promise<boolean> {
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID de la dimension a anadir:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID de la dimensión a anadir (formato: D-XXX):",
+      validate: (id) => (/^D-\d+$/.test(id) ? true : "Debe tener formato D-XXX (ej: D-001)"),
     },
     {
       type: "text",
@@ -150,7 +150,7 @@ async function modificarDimensionMenu(manager: GestorMultiversal): Promise<boole
       type: "text",
       name: "id",
       message: "Introduce el ID de la dimension a modificar:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      validate: (id) => (/^D-\d+$/.test(id) ? true : "Debe tener formato D-XXX (ej: D-001)"),
     },
     {
       type: "text",

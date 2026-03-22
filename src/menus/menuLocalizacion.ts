@@ -62,8 +62,8 @@ async function addLocalizacionMenu(
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID de la localizacion a anadir:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID de la localizacion a anadir (formato: LXXX):",
+      validate: (id) => (/^L\d+$/.test(id) ? true : "Debe tener formato LXXX (ej: L001)"),
     },
     {
       type: "text",
@@ -161,8 +161,8 @@ async function modificarLocalizacionMenu(
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID de la localizacion a modificar:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID de la localizacion a modificar (formato: LXXX):",
+      validate: (id) => (/^L\d+$/.test(id) ? true : "Debe tener formato LXXX (ej: L001)"),
     },
     {
       type: "text",

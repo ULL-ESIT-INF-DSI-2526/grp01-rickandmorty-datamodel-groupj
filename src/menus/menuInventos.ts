@@ -60,8 +60,8 @@ async function addInventoMenu(manager: GestorMultiversal): Promise<boolean> {
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID del invento a anadir:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID del invento a anadir (formato: IXXX):",
+      validate: (id) => (/^I\d+$/.test(id) ? true : "Debe tener formato IXXX (ej: I001)"),
     },
     {
       type: "text",
@@ -161,8 +161,8 @@ async function modificarInventoMenu(
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID del invento a modificar:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID del invento a modificar (formato: IXXX):",
+      validate: (id) => (/^I\d+$/.test(id) ? true : "Debe tener formato IXXX (ej: I001)"),
     },
     {
       type: "text",

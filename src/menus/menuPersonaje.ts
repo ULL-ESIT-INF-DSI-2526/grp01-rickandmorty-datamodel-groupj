@@ -61,8 +61,8 @@ async function addPersonajeMenu(manager: GestorMultiversal): Promise<boolean> {
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID del personaje a anadir:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      message: "Introduce el ID del personaje a anadir (formato: PXXX):",
+      validate: (id) => (/^P\d+$/.test(id) ? true : "Debe tener formato PXXX (ej: P001)"),
     },
     {
       type: "text",
@@ -184,7 +184,7 @@ async function modificarPersonajeMenu(
       type: "text",
       name: "id",
       message: "Introduce el ID del personaje a modificar:",
-      validate: (id) => (id.length > 0 ? true : "Debe de tener un ID"),
+      validate: (id) => (/^P\d+$/.test(id) ? true : "Debe tener formato PXXX (ej: P001)"),
     },
     {
       type: "text",

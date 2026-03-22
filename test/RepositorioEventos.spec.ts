@@ -33,9 +33,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento);
     const all = await repo.getAll();
@@ -48,7 +48,7 @@ describe("RepositorioEventos", () => {
       tipoEvento: "dimension",
       fecha: new Date().toISOString(),
       motivo: "Creación de dimensión",
-      dimensionId: "D3",
+      dimensionId: "D-003",
       accion: "creacion"
     };
     await repo.add(evento);
@@ -62,7 +62,7 @@ describe("RepositorioEventos", () => {
       tipoEvento: "dimension",
       fecha: new Date().toISOString(),
       motivo: "Destrucción de dimensión",
-      dimensionId: "D1",
+      dimensionId: "D-001",
       accion: "destruccion"
     };
     await repo.add(evento);
@@ -106,9 +106,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento);
     await expect(repo.add(evento)).rejects.toThrow("El ID del evento ya existe");
@@ -120,9 +120,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento);
     const found = await repo.findById("E1");
@@ -140,16 +140,16 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     const evento2: EventoMultiversal = {
       id: "E2",
       tipoEvento: "dimension",
       fecha: new Date().toISOString(),
       motivo: "Creación de dimensión",
-      dimensionId: "D3",
+      dimensionId: "D-003",
       accion: "creacion"
     };
     await repo.add(evento1);
@@ -164,16 +164,16 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     const evento2: EventoMultiversal = {
       id: "E2",
       tipoEvento: "dimension",
       fecha: new Date().toISOString(),
       motivo: "Creación de dimensión",
-      dimensionId: "D3",
+      dimensionId: "D-003",
       accion: "creacion"
     };
     await repo.add(evento1);
@@ -189,16 +189,16 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     const evento2: EventoMultiversal = {
       id: "E2",
       tipoEvento: "dimension",
       fecha: new Date().toISOString(),
       motivo: "Destrucción de dimensión",
-      dimensionId: "D1",
+      dimensionId: "D-001",
       accion: "destruccion"
     };
     await repo.add(evento1);
@@ -214,9 +214,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     const evento2: EventoMultiversal = {
       id: "E2",
@@ -240,9 +240,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento);
     const result = await repo.filterByTipoEvento("invento");
@@ -273,9 +273,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento1);
     await repo.add(evento2);
@@ -306,9 +306,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     await repo.add(evento);
     const result = await repo.filterByInventoId("I1");
@@ -328,9 +328,9 @@ describe("RepositorioEventos", () => {
       tipoEvento: "viaje",
       fecha: new Date().toISOString(),
       motivo: "Viaje interdimensional",
-      personajeId: "P1",
-      dimensionOrigenId: "D1",
-      dimensionDestinoId: "D2"
+      personajeId: "P001",
+      dimensionOrigenId: "D-001",
+      dimensionDestinoId: "D-002"
     };
     
     await expect(repo.add(evento)).rejects.toThrow("Base de datos no inicializada");

@@ -17,7 +17,9 @@ export class RepositorioInventos implements IDuplicable<Invento> {
   }
 
   async add(invento: Invento): Promise<void>{
-      await this._db.read()
+    if (!/^I\d+$/.test(invento.id)) {
+      throw new Error("El ID del invento debe tener formato IXXX (ej: I001)");
+    }
   
       if (await this.isDuplicate(invento)) {
         throw new Error("Invento duplicado");

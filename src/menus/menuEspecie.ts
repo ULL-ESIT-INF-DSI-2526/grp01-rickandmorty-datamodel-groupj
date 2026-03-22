@@ -62,8 +62,8 @@ async function addEspecieMenu(manager: GestorMultiversal): Promise<boolean> {
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID de la especie a anadir:",
-      validate: (id) => (id.length > 0 ? true : "Debe tener un ID"),
+      message: "Introduce el ID de la especie a anadir (formato: EXXX):",
+      validate: (id) => (/^E\d+$/.test(id) ? true : "Debe tener formato EXXX (ej: E001)"),
     },
     {
       type: "text",
@@ -157,8 +157,8 @@ async function modificarEspecieMenu(manager: GestorMultiversal): Promise<boolean
     {
       type: "text",
       name: "id",
-      message: "Introduce el ID de la especie a modificar:",
-      validate: (id) => (id.length > 0 ? true : "Debe tener un ID"),
+      message: "Introduce el ID de la especie a modificar (formato: EXXX):",
+      validate: (id) => (/^E\d+$/.test(id) ? true : "Debe tener formato EXXX (ej: E001)"),
     },
     {
       type: "text",

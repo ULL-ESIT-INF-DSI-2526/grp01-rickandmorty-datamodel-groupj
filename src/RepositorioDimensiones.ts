@@ -16,6 +16,9 @@ export class RepositorioDimensiones implements IDuplicable<Dimension>, IReposito
   }
 
   async add(dimension: Dimension): Promise<void>{
+    if (!/^D-\d+$/.test(dimension.id)) {
+      throw new Error("El ID de dimensión debe tener formato D-XXX (ej: D-001)");
+    }
     await this._db.read();
 
     if (await this.isDuplicate(dimension)) {

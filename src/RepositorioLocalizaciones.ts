@@ -16,6 +16,9 @@ export class RepositorioLocalizaciones implements IDuplicable<Localizacion> {
   }
 
   async add(localizacion: Localizacion): Promise<void>{
+    if (!/^L\d+$/.test(localizacion.id)) {
+      throw new Error("El ID de la localización debe tener formato LXXX (ej: L001)");
+    }
     await this._db.read()
     
     if (await this.isDuplicate(localizacion)) {

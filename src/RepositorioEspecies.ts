@@ -15,8 +15,9 @@ export class RepositorioEspecies implements IDuplicable<Especie> {
     this._db = database;
   }
 
-  async add(especie: Especie): Promise<void> {
-    await this._db.read();
+  async add(especie: Especie): Promise<void> {    if (!/^E\d+$/.test(especie.id)) {
+      throw new Error("El ID de la especie debe tener formato EXXX (ej: E001)");
+    }    await this._db.read();
     if (await this.isDuplicate(especie)) {
       throw new Error("Especie duplicada");
     }

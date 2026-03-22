@@ -17,6 +17,9 @@ export class RepositorioPersonajes implements IDuplicable<Personaje> {
     }
   
     async add(personaje: Personaje): Promise<void>{
+      if (!/^P\d+$/.test(personaje.id)) {
+        throw new Error("El ID del personaje debe tener formato PXXX (ej: P001)");
+      }
       await this._db.read()
   
       if (await this.isDuplicate(personaje)) {
