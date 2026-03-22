@@ -1,564 +1,292 @@
-import { describe, expect, test, beforeEach } from "vitest";
+import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import { GestorMultiversal } from "../src/gestor";
 import { Dimension } from "../src/Dimension";
 import { Especie } from "../src/especies";
 import { Personaje } from "../src/personajes";
 import { Localizacion } from "../src/localizaciones";
 import { Invento } from "../src/inventos";
+import { Low } from "lowdb";
+import { Data, DefaultData } from "../src/Database/db";
+import { JSONFilePreset } from "lowdb/node";
+import fs from "fs";
+import path from "path";
 
 let gestor: GestorMultiversal;
+let db: Low<Data>;
+let testDbPath: string;
 
-beforeEach(() => {
-  gestor = new GestorMultiversal();
+beforeEach(async () => {
+  testDbPath = path.join(__dirname, `testDb_gestor_${Date.now()}.json`);
+  db = await JSONFilePreset(testDbPath, DefaultData);
+  db.data.dimension = [];
+  db.data.especie = [];
+  db.data.personaje = [];
+  db.data.localizacion = [];
+  db.data.invento = [];
+  await db.write();
+  gestor = new GestorMultiversal(db);
+});
+
+afterEach(() => {
+  if (fs.existsSync(testDbPath)) {
+    fs.unlinkSync(testDbPath);
+  }
 });
 
 describe("GestorMultiversal", () => {
 
-  // ---------- ADD ----------
-
-  test("addDimension correcto", () => {
+  test("addDimension correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "desc");
-    gestor.addDimension(d);
-
-    expect(gestor.getDimensionesDestruidas().length).toBe(0);
+    await gestor.addDimension(d);
+    const dimensiones = await gestor.dimensionesRepo.getAll();
+    expect(dimensiones.length).toBe(1);
   });
 
-  test("addPersonaje error por null", () => {
+  test("addPersonaje error por null", async () => {
     const p = new Personaje("P1", "Rick", null, null, "vivo", "Independiente", 10, "d");
-
-    expect(() => gestor.addPersonaje(p))
-      .toThrow("El personaje debe tener una dimensión y especie");
+    await expect(gestor.addPersonaje(p)).rejects.toThrow("El personaje debe tener una dimensión y especie");
   });
 
-  test("addPersonaje error por referencias inexistentes", () => {
+  test("addPersonaje error por referencias inexistentes", async () => {
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    expect(() => gestor.addPersonaje(p))
-      .toThrow("Especie o dimensión inexistentes");
+    await expect(gestor.addPersonaje(p)).rejects.toThrow("Especie o dimensión inexistentes");
   });
 
-  test("addPersonaje correcto", () => {
+  test("addPersonaje correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
 
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
 
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addPersonaje(p);
 
-    gestor.addPersonaje(p);
-
-    expect(gestor.filterPersonajesByNombre("Rick").length).toBe(1);
+    const result = await gestor.filterPersonajesByNombre("Rick");
+    expect(result.length).toBe(1);
   });
 
-  test("addEspecie error origen null", () => {
+  test("addEspecie error origen null", async () => {
     const e = new Especie("E1", "Humano", null, "humanoide", 80, "d");
-
-    expect(() => gestor.addEspecie(e))
-      .toThrow("La especie debe tener un origen");
+    await expect(gestor.addEspecie(e)).rejects.toThrow("La especie debe tener un origen");
   });
 
-  test("addEspecie error origen desconocido", () => {
+  test("addEspecie error origen desconocido", async () => {
     const e = new Especie("E1", "Humano", "X", "humanoide", 80, "d");
-
-    expect(() => gestor.addEspecie(e))
-      .toThrow("Origen de la especie desconocido");
+    await expect(gestor.addEspecie(e)).rejects.toThrow("Origen de la especie desconocido");
   });
 
-  test("addLocalizacion error", () => {
+  test("addLocalizacion error dimension null", async () => {
     const l = new Localizacion("L1", "Loc", "Planeta", 10, null, "d");
-
-    expect(() => gestor.addLocalizacion(l))
-      .toThrow("La localización debe tener una dimensión");
+    await expect(gestor.addLocalizacion(l)).rejects.toThrow("La localización debe tener una dimensión");
   });
 
-  test("addInvento error", () => {
-    const i = new Invento("I1", "Gun", null, "Arma", 5, "d");
-
-    expect(() => gestor.addInvento(i))
-      .toThrow("El invento debe tener un inventor");
-  });
-
-  test("addLocalizacion dimension no existe", () => {
+  test("addLocalizacion dimension no existe", async () => {
     const l = new Localizacion("L1", "Loc", "Planeta", 10, "D_NO", "d");
-
-    expect(() => gestor.addLocalizacion(l))
-      .toThrow("Origen de la localización desconocida");
+    await expect(gestor.addLocalizacion(l)).rejects.toThrow("Origen de la localización desconocida");
   });
 
-  test("addInvento inventor no existe", () => {
+  test("addInvento error inventor null", async () => {
+    const i = new Invento("I1", "Gun", null, "Arma", 5, "d");
+    await expect(gestor.addInvento(i)).rejects.toThrow("El invento debe tener un inventor");
+  });
+
+  test("addInvento inventor no existe", async () => {
     const i = new Invento("I1", "Gun", "P_NO", "Arma", 5, "d");
-
-    expect(() => gestor.addInvento(i))
-      .toThrow("Inventor desconocido");
+    await expect(gestor.addInvento(i)).rejects.toThrow("Inventor desconocido");
   });
 
-  // ---------- REMOVE ----------
+  test("addLocalizacion correcto", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    await gestor.addDimension(d);
+    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
+    await gestor.addLocalizacion(l);
+    const localizaciones = await gestor.localizacionesRepo.getAll();
+    expect(localizaciones.length).toBe(1);
+  });
 
-  test("removeDimension cascada", () => {
+  test("addInvento correcto", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
+    await gestor.addInvento(i);
+    const inventos = await gestor.inventosRepo.getAll();
+    expect(inventos.length).toBe(1);
+  });
+
+  test("removeDimension cascada", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-
-    gestor.removeDimension("D1");
-
-    expect(gestor.filterLocalizacionesByDimension("D1").length).toBe(0);
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    await gestor.removeDimension("D1");
+    const localizaciones = await gestor.filterLocalizacionesByDimension("D1");
+    expect(localizaciones.length).toBe(0);
   });
 
-  test("removePersonaje afecta inventos", () => {
+  test("removePersonaje afecta inventos", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
     const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-    gestor.addInvento(i);
-
-    gestor.removePersonaje("P1");
-
-    expect(gestor.filterInventosByInventor("P1").length).toBe(0);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    await gestor.removePersonaje("P1");
+    const inventos = await gestor.filterInventosByInventor("P1");
+    expect(inventos.length).toBe(0);
   });
 
-  test("removeEspecie afecta personajes", () => {
+  test("removeEspecie afecta personajes", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    gestor.removeEspecie("E1");
-
-    expect(gestor.filterPersonajesByEspecie("E1").length).toBe(0);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.removeEspecie("E1");
+    const personajes = await gestor.filterPersonajesByEspecie("E1");
+    expect(personajes.length).toBe(0);
   });
 
-  test("removeLocalizacion afecta especies", () => {
+  test("removeLocalizacion afecta especies", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
     const e = new Especie("E1", "Humano", "L1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-    gestor.addEspecie(e);
-
-    gestor.removeLocalizacion("L1");
-
-    expect(() => gestor.addEspecie(e)).toThrow();
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    await gestor.addEspecie(e);
+    await gestor.removeLocalizacion("L1");
+    const especie = await gestor.especiesRepo.findById("E1");
+    expect(especie?.origen).toBe(null);
   });
 
-  test("removeInvento simple", () => {
+  test("removeInvento simple", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
     const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-    gestor.addInvento(i);
-
-    gestor.removeInvento("I1");
-
-    expect(gestor.filterInventosByNombre("Gun").length).toBe(0);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    await gestor.removeInvento("I1");
+    const inventos = await gestor.filterInventosByNombre("Gun");
+    expect(inventos.length).toBe(0);
   });
 
-  // ---------- UPDATE ----------
-
-  test("updateDimension", () => {
+  test("updateDimension", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
-
-    gestor.addDimension(d);
-
-    gestor.updateDimension("D1", { nombre: "Nueva" });
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.updateDimension("D1", { nombre: "Nueva" });
+    const updated = await gestor.dimensionesRepo.findById("D1");
+    expect(updated?.nombre).toBe("Nueva");
   });
 
-  test("updatePersonaje sin especie ni dimension", () => {
+  test("updatePersonaje correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    gestor.updatePersonaje("P1", { estado: "muerto" });
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.updatePersonaje("P1", { estado: "muerto" });
+    const updated = await gestor.personajesRepo.findById("P1");
+    expect(updated?.estado).toBe("muerto");
   });
 
-  test("updateEspecie sin origen", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { nombre: "Nueva" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updatePersonaje error especie", () => {
-    expect(() =>
-      gestor.updatePersonaje("X", { especie: "E1" })
-    ).toThrow("La especie no existe");
-  });
-
-  test("updateLocalizacion error dimension", () => {
-    expect(() =>
-      gestor.updateLocalizacion("X", { dimension: "D1" })
-    ).toThrow("Origen de la localización desconocida");
-  });
-
-  test("updateInvento error inventor", () => {
-    expect(() =>
-      gestor.updateInvento("X", { inventor: "P1" })
-    ).toThrow("Inventor desconocido");
-  });
-
-  test("updatePersonaje sin validaciones (undefined)", () => {
+  test("updatePersonaje error especie no existe", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    gestor.updatePersonaje("P1", {});
-
-    expect(gestor.filterPersonajesByNombre("Rick").length).toBe(1);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await expect(gestor.updatePersonaje("P1", { especie: "NO_EXISTE" })).rejects.toThrow("La especie no existe");
   });
 
-  test("updateEspecie origen válido dimension", () => {
+  test("updatePersonaje error dimension no existe", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "D1" });
-
-    expect(true).toBe(true);
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await expect(gestor.updatePersonaje("P1", { dimension: "NO_EXISTE" })).rejects.toThrow("La dimensión no existe");
   });
 
-  test("updateEspecie origen válido localizacion", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "L1" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie sin entrar en if", () => {
+  test("updateEspecie correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", {});
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.updateEspecie("E1", { nombre: "Nueva" });
+    const updated = await gestor.especiesRepo.findById("E1");
+    expect(updated?.nombre).toBe("Nueva");
   });
 
-  test("updateLocalizacion válido", () => {
+  test("updateEspecie error origen desconocido", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await expect(gestor.updateEspecie("E1", { origen: "NO_EXISTE" })).rejects.toThrow("Origen de la especie desconocido");
+  });
+
+  test("updateLocalizacion correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-
-    gestor.updateLocalizacion("L1", { dimension: "D1" });
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    await gestor.updateLocalizacion("L1", { nombre: "Nueva" });
+    const updated = await gestor.localizacionesRepo.findById("L1");
+    expect(updated?.nombre).toBe("Nueva");
   });
 
-  test("updateLocalizacion sin entrar en if", () => {
+  test("updateLocalizacion error dimension no existe", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-
-    gestor.updateLocalizacion("L1", {});
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    await expect(gestor.updateLocalizacion("L1", { dimension: "NO_EXISTE" })).rejects.toThrow("Origen de la localización desconocida");
   });
 
-  test("updateInvento válido", () => {
+  test("updateInvento correcto", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
     const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-    gestor.addInvento(i);
-
-    gestor.updateInvento("I1", { inventor: "P1" });
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    await gestor.updateInvento("I1", { nombre: "Nueva" });
+    const updated = await gestor.inventosRepo.findById("I1");
+    expect(updated?.nombre).toBe("Nueva");
   });
 
-  test("updateInvento sin entrar en if", () => {
+  test("updateInvento error inventor no existe", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
     const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-    gestor.addInvento(i);
-
-    gestor.updateInvento("I1", {});
-
-    expect(true).toBe(true);
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    await expect(gestor.updateInvento("I1", { inventor: "NO_EXISTE" })).rejects.toThrow("Inventor desconocido");
   });
-
-  test("updatePersonaje con dimension válida existente", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    gestor.updatePersonaje("P1", { dimension: "D1" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updatePersonaje con dimension válida existente", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    gestor.updatePersonaje("P1", { dimension: "D1" }); // entra en if pero NO lanza error
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie origen válido solo localizacion", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "L1" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie origen válido solo localizacion (cubre AND parcial)", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "L1" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie origen válido solo dimension", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "D1" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie origen existe como dimension Y localizacion", () => {
-    const d = new Dimension("X", "Dim", "activa", 5, "d");
-    const l = new Localizacion("X", "Loc", "Planeta", 10, "X", "d");
-    const e = new Especie("E1", "Humano", "X", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", { origen: "X" });
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie origen undefined", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    gestor.updateEspecie("E1", {});
-
-    expect(true).toBe(true);
-  });
-
-  test("updateEspecie lanza error si origen no existe en ningun sitio", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
-    expect(() => {
-      gestor.updateEspecie("E1", { origen: "NO_EXISTE" });
-    }).toThrow("Origen de la especie desconocido");
-  });
-
-  test("updatePersonaje especie no existe", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    expect(() =>
-      gestor.updatePersonaje("P1", { especie: "NO_EXISTE" })
-    ).toThrow("La especie no existe");
-  });
-
-  test("updatePersonaje dimension no existe", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    expect(() =>
-      gestor.updatePersonaje("P1", { dimension: "NO_EXISTE" })
-    ).toThrow("La dimensión no existe");
-  });
-
-  test("updatePersonaje especie no existe (cubre throw real)", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    expect(() =>
-      gestor.updatePersonaje("P1", { especie: "E_NO_EXISTE" })
-    ).toThrow("La especie no existe");
-  });
-
-test("updatePersonaje especie existe (no entra al throw)", () => {
-  const d = new Dimension("D1", "Dim", "activa", 5, "d");
-  const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-  const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-  gestor.addDimension(d);
-  gestor.addEspecie(e);
-  gestor.addPersonaje(p);
-
-  gestor.updatePersonaje("P1", { especie: "E1" });
-
-  expect(true).toBe(true);
-});
-
-  // ---------- FILTER ----------
-
-  test("filters funcionan", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    expect(gestor.filterPersonajesByNombre("Rick").length).toBe(1);
-    expect(gestor.filterPersonajesByEspecie("E1").length).toBe(1);
-  });
-
-  test("filters localizaciones gestor", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
-
-    gestor.addDimension(d);
-    gestor.addLocalizacion(l);
-
-    expect(gestor.filterLocalizacionesByNombre("Loc").length).toBe(1);
-    expect(gestor.filterLocalizacionesByTipo("Planeta").length).toBe(1);
-    expect(gestor.filterLocalizacionesByDimension("D1").length).toBe(1);
-  });
-
-  test("filters inventos gestor", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-    gestor.addInvento(i);
-
-    expect(gestor.filterInventosByNombre("Gun").length).toBe(1);
-    expect(gestor.filterInventosByTipo("Arma").length).toBe(1);
-    expect(gestor.filterInventosByPeligrosidad(5).length).toBe(1);
-  });
-
-  test("filters personajes restantes gestor", () => {
-    const d = new Dimension("D1", "Dim", "activa", 5, "d");
-    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-    gestor.addPersonaje(p);
-
-    expect(gestor.filterPersonajesByAfiliacion("Independiente").length).toBe(1);
-    expect(gestor.filterPersonajesByEstado("vivo").length).toBe(1);
-    expect(gestor.filterPersonajesByDimension("D1").length).toBe(1);
-  });
-
-  // ---------- ORDER ----------
 
   test("orderPersonajesByNombre asc/desc", () => {
     const p1 = new Personaje("1", "B", "E1", "D1", "vivo", "Independiente", 1, "d");
     const p2 = new Personaje("2", "A", "E1", "D1", "vivo", "Independiente", 1, "d");
-
     const asc = gestor.orderPersonajesByNombre([p1, p2], true);
     const desc = gestor.orderPersonajesByNombre([p1, p2], false);
-
     expect(asc[0].nombre).toBe("A");
     expect(desc[0].nombre).toBe("B");
   });
@@ -566,71 +294,234 @@ test("updatePersonaje especie existe (no entra al throw)", () => {
   test("orderPersonajesByInteligencia asc/desc", () => {
     const p1 = new Personaje("1", "A", "E1", "D1", "vivo", "Independiente", 1, "d");
     const p2 = new Personaje("2", "B", "E1", "D1", "vivo", "Independiente", 10, "d");
-
     const asc = gestor.orderPersonajesByInteligencia([p1, p2], true);
     const desc = gestor.orderPersonajesByInteligencia([p1, p2], false);
-
     expect(asc[0].nivelInteligencia).toBe(1);
     expect(desc[0].nivelInteligencia).toBe(10);
   });
 
-  // ---------- VARIANTES ----------
-
-  test("getVariantesPersonaje", () => {
+  test("getVariantesPersonaje", async () => {
     const d1 = new Dimension("D1", "A", "activa", 5, "d");
     const d2 = new Dimension("D2", "B", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d1);
-    gestor.addDimension(d2);
-    gestor.addEspecie(e);
-
+    await gestor.addDimension(d1);
+    await gestor.addDimension(d2);
+    await gestor.addEspecie(e);
     const p1 = new Personaje("1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
     const p2 = new Personaje("2", "Rick", "E1", "D2", "vivo", "Independiente", 10, "d");
-
-    gestor.addPersonaje(p1);
-    gestor.addPersonaje(p2);
-
-    const variantes = gestor.getVariantesPersonaje(p1);
-
-    expect(variantes.length).toBe(1);
+    await gestor.addPersonaje(p1);
+    await gestor.addPersonaje(p2);
+    const variantes = await gestor.getVariantesPersonaje("Rick");
+    expect(variantes.length).toBe(2);
   });
 
-  // ---------- ESTADO GLOBAL ----------
-
-  test("getDimensionesDestruidas", () => {
+  test("getDimensionesDestruidas", async () => {
     const d = new Dimension("D1", "Dim", "destruida", 5, "d");
-    gestor.addDimension(d);
-
-    expect(gestor.getDimensionesDestruidas().length).toBe(1);
+    await gestor.addDimension(d);
+    const destruidas = await gestor.getDimensionesDestruidas();
+    expect(destruidas.length).toBe(1);
   });
 
-  test("getPersonajesDimDestruida", () => {
+  test("getPersonajesDimDestruida", async () => {
     const d = new Dimension("D1", "Dim", "destruida", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-    gestor.addPersonaje(p);
-
-    expect(gestor.getPersonajesDimDestruida().length).toBe(1);
+    await gestor.addPersonaje(p);
+    const personajes = await gestor.getPersonajesDimDestruida();
+    expect(personajes.length).toBe(1);
   });
 
-  test("getPersonajesDimEliminada", () => {
+  test("getPersonajesDimEliminada", async () => {
     const d = new Dimension("D1", "Dim", "activa", 5, "d");
     const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
-
-    gestor.addDimension(d);
-    gestor.addEspecie(e);
-
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
     const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
-    gestor.addPersonaje(p);
+    await gestor.addPersonaje(p);
+    await gestor.removeDimension("D1");
+    const personajes = await gestor.getPersonajesDimEliminada();
+    expect(personajes.length).toBe(1);
+  });
 
-    gestor.removeDimension("D1");
+  test("filterPersonajesByAfiliacion", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    const result = await gestor.filterPersonajesByAfiliacion("Independiente");
+    expect(result.length).toBe(1);
+  });
 
-    expect(gestor.getPersonajesDimEliminada().length).toBe(1);
+  test("filterPersonajesByEstado", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    const result = await gestor.filterPersonajesByEstado("vivo");
+    expect(result.length).toBe(1);
+  });
+
+  test("filterPersonajesByDimension", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    const result = await gestor.filterPersonajesByDimension("D1");
+    expect(result.length).toBe(1);
+  });
+
+  test("filterLocalizacionesByNombre", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    const result = await gestor.filterLocalizacionesByNombre("Loc");
+    expect(result.length).toBe(1);
+  });
+
+  test("filterLocalizacionesByTipo", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    const result = await gestor.filterLocalizacionesByTipo("Planeta");
+    expect(result.length).toBe(1);
+  });
+
+  test("filterInventosByTipo", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    const result = await gestor.filterInventosByTipo("Arma");
+    expect(result.length).toBe(1);
+  });
+
+  test("filterInventosByPeligrosidad", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    const result = await gestor.filterInventosByPeligrosidad(5);
+    expect(result.length).toBe(1);
+  });
+
+  test("filterInventosByInventor", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    const result = await gestor.filterInventosByInventor("P1");
+    expect(result.length).toBe(1);
+  });
+
+  test("updatePersonaje especie existe", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    
+    await gestor.updatePersonaje("P1", { especie: "E1" });
+    
+    const updated = await gestor.personajesRepo.findById("P1");
+    expect(updated?.especie).toBe("E1");
+  });
+
+  test("updatePersonaje dimension existe", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    
+    await gestor.updatePersonaje("P1", { dimension: "D1" });
+    
+    const updated = await gestor.personajesRepo.findById("P1");
+    expect(updated?.dimension).toBe("D1");
+  });
+
+  test("updateEspecie origen existe como dimension", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    
+    // Cambiar origen a uno que SÍ existe (D1)
+    await gestor.updateEspecie("E1", { origen: "D1" });
+    
+    const updated = await gestor.especiesRepo.findById("E1");
+    expect(updated?.origen).toBe("D1");
+  });
+
+  test("updateEspecie origen existe como localizacion", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    await gestor.addEspecie(e);
+    
+    await gestor.updateEspecie("E1", { origen: "L1" });
+    
+    const updated = await gestor.especiesRepo.findById("E1");
+    expect(updated?.origen).toBe("L1");
+  });
+
+  test("updateLocalizacion dimension existe", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const l = new Localizacion("L1", "Loc", "Planeta", 10, "D1", "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addLocalizacion(l);
+    
+    await gestor.updateLocalizacion("L1", { dimension: "D1" });
+    
+    const updated = await gestor.localizacionesRepo.findById("L1");
+    expect(updated?.dimension).toBe("D1");
+  });
+
+  test("updateInvento inventor existe", async () => {
+    const d = new Dimension("D1", "Dim", "activa", 5, "d");
+    const e = new Especie("E1", "Humano", "D1", "humanoide", 80, "d");
+    const p = new Personaje("P1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "d");
+    const i = new Invento("I1", "Gun", "P1", "Arma", 5, "d");
+    
+    await gestor.addDimension(d);
+    await gestor.addEspecie(e);
+    await gestor.addPersonaje(p);
+    await gestor.addInvento(i);
+    
+    await gestor.updateInvento("I1", { inventor: "P1" });
+    
+    const updated = await gestor.inventosRepo.findById("I1");
+    expect(updated?.inventor).toBe("P1");
   });
 
 });
