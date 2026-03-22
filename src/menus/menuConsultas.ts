@@ -19,6 +19,10 @@ import {
   searchNivelInvento,
 } from "./buscadores/searchInventos.js";
 
+/**
+ * Funcion que guarda las opciones del menu de consultas
+ * @param gestor gestor del multiverso
+ */
 export async function mostrarMenuConsultas(
   gestor: GestorMultiversal,
 ): Promise<void> {
@@ -37,7 +41,6 @@ export async function mostrarMenuConsultas(
       ],
     });
 
-    let opcion;
     switch (respuesta.consulta) {
       case "personajes":
         await consultasPersonaje(gestor);
@@ -66,6 +69,10 @@ export async function mostrarMenuConsultas(
   }
 }
 
+/**
+ * Funcion que guarda las opciones del menu de localizaciones
+ * @param gestor gestor del multiverso
+ */
 export async function consultasLocalizaciones(gestor: GestorMultiversal) {
   let salir = false;
   while (!salir) {
@@ -102,6 +109,10 @@ export async function consultasLocalizaciones(gestor: GestorMultiversal) {
   }
 }
 
+/**
+ * Funcion que guarda las opciones del menu de inventos
+ * @param gestor gestor del multiverso
+ */
 export async function consultasInventos(gestor: GestorMultiversal) {
   let salir = false;
   while (!salir) {
@@ -143,6 +154,10 @@ export async function consultasInventos(gestor: GestorMultiversal) {
   }
 }
 
+/**
+ * Funcion que guarda las opciones del menu de personajes
+ * @param gestor gestor del multiverso
+ */
 export async function consultasPersonaje(gestor: GestorMultiversal) {
   let salir = false;
   while (!salir) {
