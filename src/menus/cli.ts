@@ -6,8 +6,8 @@ import { mostrarMenuPersonaje } from "./menuPersonaje.js";
 import { mostrarMenuEspecie } from "./menuEspecie.js";
 import { mostrarMenuLocalizacion } from "./menuLocalizacion.js";
 import { mostrarMenuInvento } from "./menuInventos.js";
-import { mostrarMenuConsultas } from "./menuConsultas.js";
 import { mostrarMenuEstadoGlobal } from "./menuEstadoGlobal.js";
+import { mostrarMenuInformes } from "./menuInformes.js";
 
 type OpcionMenuPrincipal =
   | "dimensiones"
@@ -16,7 +16,7 @@ type OpcionMenuPrincipal =
   | "localizaciones"
   | "inventos"
   | "estadoGlobal"
-  | "consultas"
+  | "informes"
   | "salir";
 
 export async function mostrarMenuPrincipal(): Promise<OpcionMenuPrincipal> {
@@ -30,8 +30,8 @@ export async function mostrarMenuPrincipal(): Promise<OpcionMenuPrincipal> {
       { title: "Especies", value: "especies" },
       { title: "Localizaciones", value: "localizaciones" },
       { title: "Inventos", value: "inventos" },
-      { title: "Estado global del multiverso", value: "estadoGlobal" },
-      { title: "Consultas e informes", value: "consultas" },
+      { title: "Estado Global del Multiverso", value: "estadoGlobal" },
+      { title: "Informes", value: "informes" },
       { title: "Salir", value: "salir" },
     ],
   });
@@ -66,8 +66,8 @@ export async function main(): Promise<void> {
       case "estadoGlobal":
         await mostrarMenuEstadoGlobal(gestor);
         break;
-      case "consultas":
-        await mostrarMenuConsultas(gestor);
+      case "informes":
+        await mostrarMenuInformes(gestor);
         break;
       case "salir":
         salir = true;
