@@ -6,6 +6,7 @@ import { Personaje } from "../personajes.js";
 import { Invento } from "../inventos.js";
 import { Localizacion } from "../localizaciones.js";
 import { Especie } from "../especies.js";
+import type { EventoMultiversal } from "../interfaces.js";
 
 /** Tipo de dato */
 export type Data = {
@@ -14,6 +15,7 @@ export type Data = {
   invento: Invento[];
   localizacion: Localizacion[];
   especie: Especie[];
+  eventos: EventoMultiversal[];
 };
 
 export const DefaultData: Data = {
@@ -22,6 +24,7 @@ export const DefaultData: Data = {
   invento: [],
   localizacion: [],
   especie: [],
+  eventos: [],
 };
 
 export const db: Low<Data> = await JSONFilePreset("src/Database/db.json", DefaultData);

@@ -1,4 +1,4 @@
-import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion, tipoLocalizacion } from "./types.js";
+import { estadosDimension, estadosPersonaje, tiposEspecie, tiposInvento, tipoAfiliacion, tipoLocalizacion, tipoEventoMultiversal, accionEventoDimension, accionEventoInvento } from "./types.js";
 import { Low } from "lowdb"
 import { Data } from "./Database/db.js";
 
@@ -77,6 +77,54 @@ export interface ILocalizacion extends IAtributos {
   /**Población aproximada de habitantes*/
   poblacionAproximada: number;
 }
+
+/**
+ * Interfaz base para registrar eventos del multiverso.
+ */
+export interface IEventoBase {
+  /** ID unico del evento */
+  id: string;
+  /** Tipo general del evento */
+  tipoEvento: tipoEventoMultiversal;
+  /** Fecha y hora en formato ISO */
+  fecha: string;
+  /** Motivo o descripcion breve del evento */
+  motivo: string;
+}
+
+/**
+ * Evento de viaje interdimensional de un personaje.
+ */
+export interface IEventoViaje extends IEventoBase {
+  tipoEvento: "viaje";
+  personajeId: string;
+  dimensionOrigenId: string;
+  dimensionDestinoId: string;
+}
+
+/**
+ * Evento de creacion o destruccion de una dimension.
+ */
+export interface IEventoDimension extends IEventoBase {
+  tipoEvento: "dimension";
+  accion: accionEventoDimension;
+  dimensionId: string;
+}
+
+/**
+ * Evento de despliegue o neutralizacion de un invento.
+ */
+export interface IEventoInvento extends IEventoBase {
+  tipoEvento: "invento";
+  accion: accionEventoInvento;
+  inventoId: string;
+  localizacionId: string;
+}
+
+/**
+ * Union de eventos soportados por el sistema.
+ */
+export type EventoMultiversal = IEventoViaje | IEventoDimension | IEventoInvento;
 
 /**
  * Interfaz que define los métodos para un contenedor 

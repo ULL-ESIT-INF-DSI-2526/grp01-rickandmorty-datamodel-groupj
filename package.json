@@ -36,6 +36,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
+    "lowdb": "^7.0.1",
     "prompts": "^2.4.2"
   }
 }
