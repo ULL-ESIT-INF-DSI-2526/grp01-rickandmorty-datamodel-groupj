@@ -297,4 +297,9 @@ describe("RepositorioPersonajes", () => {
     await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
 
+  test("add lanza error si ID no tiene formato PXXX", async () => {
+    const p = new Personaje("1", "Rick", "E1", "D1", "vivo", "Independiente", 10, "desc");
+    await expect(repo.add(p)).rejects.toThrow("El ID del personaje debe tener formato PXXX");
+  });
+
 });

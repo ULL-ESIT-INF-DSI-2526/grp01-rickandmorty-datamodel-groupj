@@ -172,4 +172,9 @@ describe("RepositorioEspecies", () => {
     await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
 
+  test("add lanza error si ID no tiene formato EXXX", async () => {
+    const e = new Especie("1", "Humano", "D1", "humanoide", 80, "desc");
+    await expect(repo.add(e)).rejects.toThrow("El ID de la especie debe tener formato EXXX");
+  });
+
 });

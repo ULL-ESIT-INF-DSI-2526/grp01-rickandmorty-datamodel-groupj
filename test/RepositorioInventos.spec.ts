@@ -230,4 +230,9 @@ describe("RepositorioInventos", () => {
     await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
 
+  test("add lanza error si ID no tiene formato IXXX", async () => {
+    const i = new Invento("1", "Pistola", "P1", "Arma", 5, "desc");
+    await expect(repo.add(i)).rejects.toThrow("El ID del invento debe tener formato IXXX");
+  });
+
 });

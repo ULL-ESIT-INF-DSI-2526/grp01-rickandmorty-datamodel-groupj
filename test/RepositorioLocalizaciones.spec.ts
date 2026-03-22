@@ -192,4 +192,9 @@ describe("RepositorioLocalizaciones", () => {
     await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
 
+  test("add lanza error si ID no tiene formato LXXX", async () => {
+    const l = new Localizacion("1", "Tierra", "Planeta", 1000, "D1", "desc");
+    await expect(repo.add(l)).rejects.toThrow("El ID de la localización debe tener formato LXXX");
+  });
+
 });

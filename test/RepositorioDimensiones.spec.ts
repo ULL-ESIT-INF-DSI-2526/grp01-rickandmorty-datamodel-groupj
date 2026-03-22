@@ -166,4 +166,9 @@ describe("RepositorioDimensiones", () => {
     await expect(repo.remove("X")).rejects.toThrow("El elemento no existe");
   });
   
+  test("add lanza error si ID no tiene formato D-XXX", async () => {
+    const d = new Dimension("1", "Dimension 1", "activa", 5, "desc");
+    await expect(repo.add(d)).rejects.toThrow("El ID de dimensión debe tener formato D-XXX");
+  });  
+  
 });
