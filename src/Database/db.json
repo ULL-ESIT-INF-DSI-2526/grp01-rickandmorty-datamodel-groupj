@@ -104,6 +104,13 @@
       "estadoDim": "activa",
       "nivelTec": 8,
       "descripcion": "Planeta de los Gazorps"
+    },
+    {
+      "id": "D-100",
+      "nombre": "Gala",
+      "estadoDim": "activa",
+      "nivelTec": 7,
+      "descripcion": "nosa"
     }
   ],
   "personaje": [
@@ -774,5 +781,23 @@
       "descripcion": "Raza cyborg superinteligente"
     }
   ],
-  "eventos": []
+  "eventos": [
+    {
+      "id": "VIAJE-1774218130490",
+      "tipoEvento": "viaje",
+      "fecha": "2026-03-22T22:22:10.490Z",
+      "motivo": "Vacaciones",
+      "personajeId": "P004",
+      "dimensionOrigenId": "D-001",
+      "dimensionDestinoId": "D-002"
+    },
+    {
+      "id": "CREACION-1774218221251",
+      "tipoEvento": "dimension",
+      "fecha": "2026-03-22T22:23:41.251Z",
+      "motivo": "experimento",
+      "dimensionId": "D-100",
+      "accion": "creacion"
+    }
+  ]
 }

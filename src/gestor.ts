@@ -20,6 +20,7 @@ import { tipoEventoMultiversal } from "./types.js";
 import { Low } from "lowdb";
 import { Data } from "./Database/db.js";
 import { normalize } from "./auxFunc.js";
+import { IEventoDimension } from "./interfaces.js";
 
 function isEventoInvento(evento: EventoMultiversal): evento is IEventoInvento {
   return evento.tipoEvento === "invento";
@@ -311,9 +312,46 @@ export class GestorMultiversal {
 
   //métodos de eventos e informes
 
-  async addEvento(evento: EventoMultiversal): Promise<void> {
+  async addEventoViaje(evento: EventoMultiversal): Promise<void> {
+    const viaje = evento as IEventoViaje;
+    
+    const personaje = await this.personajesRepo.findById(viaje.personajeId);
+    if (!personaje) throw new Error("El personaje no existe");
+
+    const dimensionOrigen = await this.dimensionesRepo.findById(viaje.dimensionOrigenId);
+    if (!dimensionOrigen) throw new Error("La dimensión de origen no existe");
+
+    const dimensionDestino = await this.dimensionesRepo.findById(viaje.dimensionDestinoId);
+    if (!dimensionDestino) throw new Error("La dimensión de destino no existe");
+
     await this.eventosRepo.add(evento);
   }
+
+
+  async addEventoDestruccionDimension(evento: EventoMultiversal): Promise<void> {
+    const event = evento as IEventoDimension;
+    const dimension = await this.dimensionesRepo.findById(event.dimensionId);
+    if (!dimension) throw new Error("La dimensión no existe");
+    await this.dimensionesRepo.update(event.dimensionId, { estadoDim: "destruida" });
+    await this.eventosRepo.add(evento);
+  }
+
+  async addEventoCreacionDimension(dimension: Dimension, evento: EventoMultiversal): Promise<void> {
+    const existe = await this.dimensionesRepo.findById(dimension.id);
+    if (existe) throw new Error("La dimensión ya existe");
+    await this.addDimension(dimension);
+    await this.eventosRepo.add(evento);
+  }
+
+  async addEventoInvento(evento: EventoMultiversal): Promise<void> {
+    const event = evento as IEventoInvento;
+    const invento = await this.inventosRepo.findById(event.inventoId);
+    if (!invento) throw new Error("El invento no existe");
+    const localizacion = await this.localizacionesRepo.findById(event.localizacionId);
+    if (!localizacion) throw new Error("La localización no existe");
+    await this.eventosRepo.add(evento);
+  }
+
 
   async getEventos(): Promise<EventoMultiversal[]> {
     await this._db.read();

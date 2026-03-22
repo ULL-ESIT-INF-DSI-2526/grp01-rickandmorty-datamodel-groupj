@@ -109,6 +109,7 @@ export interface IEventoDimension extends IEventoBase {
   tipoEvento: "dimension";
   accion: accionEventoDimension;
   dimensionId: string;
+  motivo: "experimento" | "paradoja";
 }
 
 /**
