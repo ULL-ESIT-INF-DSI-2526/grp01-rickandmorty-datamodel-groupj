@@ -10,7 +10,7 @@ import { mostrarMenuEstadoGlobal } from "./menuEstadoGlobal.js";
 import { mostrarMenuInformes } from "./menuInformes.js";
 import { mostrarMenuEventos } from "./menuEventos.js";
 
-type OpcionMenuPrincipal =
+export type OpcionMenuPrincipal =
   | "dimensiones"
   | "personajes"
   | "especies"
