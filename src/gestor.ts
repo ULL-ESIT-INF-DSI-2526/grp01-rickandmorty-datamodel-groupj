@@ -16,6 +16,7 @@ import { tipoLocalizacion } from "./types.js";
 import { tiposInvento } from "./types.js";
 import { Low } from "lowdb";
 import { Data } from "./Database/db.js";
+import { normalize } from "./auxFunc.js";
 
 /**
  * clase que contiene las funciones para registrar y filtrar personajes en la base de datos
@@ -255,13 +256,14 @@ export class GestorMultiversal {
 
   //método para las variantes
 
-  async getVariantesPersonaje(personaje: Personaje): Promise<Personaje[]> {
-    return this.personajesRepo.getAll().then(r => r.filter(p =>
-      p.id !== personaje.id &&
-      this.normalize(p.nombre) === this.normalize(personaje.nombre) &&
-      p.dimension !== personaje.dimension
-    ) as Personaje[]);
-  }
+  async getVariantesPersonaje(nombre: string): Promise<Personaje[]> {
+  const personajes = await this.personajesRepo.getAll();
+
+  return personajes.filter(p =>
+    p.nombre &&
+    normalize(p.nombre) === normalize(nombre)
+  );
+}
 
   //métodos de control del estado global del multiverso
 
@@ -281,11 +283,4 @@ export class GestorMultiversal {
     return await this.personajesRepo.getNullDimension();
   }
 
-  normalize(texto: string): string {
-    return texto
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "")
-      .toLowerCase();
-  }
 }
