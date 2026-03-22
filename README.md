@@ -41,3 +41,7 @@ npm run coverage
 ### Emblemas de estado
 
 [![CI Tests](https://github.com/ULL-ESIT-INF-DSI-2526/grp01-rickandmorty-datamodel-groupj/actions/workflows/ci.yml/badge.svg)](https://github.com/ULL-ESIT-INF-DSI-2526/grp01-rickandmorty-datamodel-groupj/actions/workflows/ci.yml)
+
+[![Coverage Status](https://coveralls.io/repos/github/ULL-ESIT-INF-DSI-2526/grp01-rickandmorty-datamodel-groupj/badge.svg?branch=main)](https://coveralls.io/github/ULL-ESIT-INF-DSI-2526/grp01-rickandmorty-datamodel-groupj?branch=main)
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=alu0101651736_grp01-rickandmorty-datamodel-groupj&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=alu0101651736_grp01-rickandmorty-datamodel-groupj)
