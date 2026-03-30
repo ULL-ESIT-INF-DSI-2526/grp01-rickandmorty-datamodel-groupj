@@ -27,4 +27,4 @@ export const DefaultData: Data = {
   eventos: [],
 };
 
-export const db: Low<Data> = await JSONFilePreset("src/Database/db.json", DefaultData);
+export const db: Low<Data> = await JSONFilePreset("src/database/db.json", DefaultData);
